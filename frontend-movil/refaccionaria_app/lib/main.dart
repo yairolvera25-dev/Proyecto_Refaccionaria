@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 void main() => runApp(const RefaccionariaApp());
 
@@ -30,24 +32,66 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
   String? selectedRole;
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
+  bool _isLoading = false;
 
-  void _intentarLogin() {
-    String user = _userController.text;
-    String pass = _passController.text;
-
-    // Lógica de validación por roles
-    if (selectedRole == "Administrador" && user == "admin" && pass == "1234") {
-      _navegar(const AdminDashboard());
-    } else if (selectedRole == "Vendedor" && user == "ventas" && pass == "1234") {
-      _navegar(const VendedorDashboard());
-    } else if (selectedRole == "Consultor" && user == "user" && pass == "1234") {
-      _navegar(const ConsultorDashboard());
-    } else {
-      // Si los datos están mal, mostramos un error
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Usuario o contraseña incorrectos para este rol")),
-      );
+  // --- LÓGICA DE CONEXIÓN REAL ---
+  Future<void> _intentarLogin() async {
+    if (selectedRole == null) {
+      _mostrarError("Por favor, selecciona un rol primero");
+      return;
     }
+
+    setState(() => _isLoading = true);
+
+    // URL del servidor de Rafiki (vía ngrok)
+    final url = Uri.parse('https://jeffery-preevolutional-isabel.ngrok-free.dev/api/auth/login');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          // Header obligatorio para que ngrok no bloquee la petición en el navegador
+          'ngrok-skip-browser-warning': 'true', 
+        },
+        body: jsonEncode({
+          'email': _userController.text.trim(),
+          'password': _passController.text.trim(),
+        }),
+      );
+
+      setState(() => _isLoading = false);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String serverRole = data['user']['role'].toString().toLowerCase();
+        
+        // Redirección automática según el rol que devuelve el servidor
+        if (serverRole == 'administrador') {
+          _navegar(const AdminDashboard());
+        } else if (serverRole == 'vendedor') {
+          _navegar(const VendedorDashboard());
+        } else {
+          _navegar(const ConsultorDashboard());
+        }
+      } else {
+        // Manejo de errores de credenciales (401, 404, etc.)
+        final errorMsg = jsonDecode(response.body);
+        _mostrarError(errorMsg['msg'] ?? "Credenciales incorrectas");
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      // Si sale este error, es bloqueo de navegador o servidor apagado
+      _mostrarError("Error de conexión. Revisa el link de ngrok.");
+      print("Detalle técnico: $e");
+    }
+  }
+
+  void _mostrarError(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent),
+    );
   }
 
   void _navegar(Widget pantalla) {
@@ -69,11 +113,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                const SizedBox(height: 60),
                 const Icon(Icons.settings_suggest, size: 80, color: Colors.white),
                 const Text("REFACCIONARIA", 
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 2)),
                 const SizedBox(height: 30),
-                
                 const Text("Selecciona tu rol:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
                 const SizedBox(height: 15),
 
@@ -91,7 +135,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                         const SizedBox(height: 15),
                         TextField(
                           controller: _userController,
-                          decoration: const InputDecoration(labelText: 'Usuario', filled: true, border: OutlineInputBorder()),
+                          decoration: const InputDecoration(labelText: 'Correo Electrónico', filled: true, border: OutlineInputBorder()),
                         ),
                         const SizedBox(height: 10),
                         TextField(
@@ -105,8 +149,10 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                           height: 50,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey, foregroundColor: Colors.white),
-                            onPressed: _intentarLogin, 
-                            child: const Text("ENTRAR AL SISTEMA"),
+                            onPressed: _isLoading ? null : _intentarLogin, 
+                            child: _isLoading 
+                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
+                              : const Text("ENTRAR AL SISTEMA"),
                           ),
                         ),
                       ],
@@ -133,6 +179,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [if (isSelected) const BoxShadow(color: Colors.black26, blurRadius: 8)],
         ),
         child: Row(
           children: [
@@ -148,15 +195,21 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
   }
 }
 
-// --- PANTALLAS DE DESTINO ---
+// --- PANTALLAS DE DESTINO (DASHBOARD) ---
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Panel Admin - Inventario"), backgroundColor: Colors.redAccent),
-      body: Center(child: ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("Cerrar Sesión"))),
+      appBar: AppBar(title: const Text("Panel Admin"), backgroundColor: Colors.redAccent, foregroundColor: Colors.white),
+      body: Center(child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text("Bienvenido Administrador", style: TextStyle(fontSize: 20)),
+          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("Salir"))
+        ],
+      )),
     );
   }
 }
@@ -166,8 +219,14 @@ class VendedorDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Caja - Ventas"), backgroundColor: Colors.green),
-      body: Center(child: ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("Cerrar Sesión"))),
+      appBar: AppBar(title: const Text("Panel Ventas"), backgroundColor: Colors.green, foregroundColor: Colors.white),
+      body: Center(child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text("Bienvenido Vendedor", style: TextStyle(fontSize: 20)),
+          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("Salir"))
+        ],
+      )),
     );
   }
 }
@@ -177,8 +236,14 @@ class ConsultorDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Buscador de Stock"), backgroundColor: Colors.blue),
-      body: Center(child: ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("Cerrar Sesión"))),
+      appBar: AppBar(title: const Text("Panel Consultas"), backgroundColor: Colors.blue, foregroundColor: Colors.white),
+      body: Center(child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text("Bienvenido Consultor", style: TextStyle(fontSize: 20)),
+          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text("Salir"))
+        ],
+      )),
     );
   }
 }
