@@ -9,9 +9,6 @@ use App\Models\Producto;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         // 1. Creamos 8 categorías primero (para que los productos tengan a dónde asignarse)
@@ -20,7 +17,7 @@ class DatabaseSeeder extends Seeder
         // 2. Creamos 3 sucursales
         Sucursal::factory(3)->create();
 
-        // 3. ¡El requerimiento de la rúbrica! Creamos 200 productos
+        // 3. Creamos 200 productos
         Producto::factory(200)->create();
     }
 }
