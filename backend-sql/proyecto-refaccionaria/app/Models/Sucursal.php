@@ -8,7 +8,7 @@ class Sucursal extends Model
 {
     use HasFactory;
 
-    // ¡Aquí le decimos a Laravel el nombre exacto de la tabla en español!
+    // ¡Aquí le decimos a Laravel el nombre exacto de la tabla!
     protected $table = 'sucursales';
 
     protected $fillable = ['nombre_sucursal', 'ubicacion'];
