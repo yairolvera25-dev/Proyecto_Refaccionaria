@@ -1,0 +1,43 @@
+### 1. REGISTRAR ADMINISTRADOR (Control total)
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "nombre": "Marcos Administrador",
+    "email": "admin@refaccionaria.com",
+    "password": "admin123",
+    "role": "administrador"
+}
+
+### 2. REGISTRAR VENDEDOR (Pantalla de ventas)
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "nombre": "Luis Vendedor",
+    "email": "vendedor@refaccionaria.com",
+    "password": "vendedor123",
+    "role": "vendedor"
+}
+
+### 3. REGISTRAR CONSULTOR (Solo ver precios)
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "nombre": "Ana Consultora",
+    "email": "consultor@refaccionaria.com",
+    "password": "consultor123",
+    "role": "consultor"
+}
+
+### 4. REGISTRAR CLIENTE (Catálogo básico)
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+    "nombre": "Juan Cliente",
+    "email": "cliente@refaccionaria.com",
+    "password": "cliente123",
+    "role": "cliente"
+}
