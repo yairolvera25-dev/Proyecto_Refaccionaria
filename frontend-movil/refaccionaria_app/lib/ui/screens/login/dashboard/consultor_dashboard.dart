@@ -9,31 +9,48 @@ class ConsultorDashboard extends StatelessWidget {
       backgroundColor: const Color(0xFF0B0E14),
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar(
-            expandedHeight: 120,
-            floating: false,
+          SliverAppBar(
+            expandedHeight: 150,
             pinned: true,
+            backgroundColor: const Color(0xFF1A1F2B),
             flexibleSpace: FlexibleSpaceBar(
-              title: Text("CONSULTOR DE STOCK"),
-              centerTitle: true,
+              title: const Text("CONSULTA DE STOCK", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Colors.blueAccent.withOpacity(0.3), Colors.transparent])
+                ),
+              ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.all(20),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const TextField(
-                  decoration: InputDecoration(
-                    hintText: "Buscar por código o nombre...",
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // Barra de búsqueda profesional
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: "Buscar por nombre, código o marca...",
+                      prefixIcon: const Icon(Icons.search, color: Colors.blueAccent),
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.05),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _buildInfoTile("Bujía NGK", "Pasillo A - Estante 4", "12 unidades"),
-                _buildInfoTile("Aceite Castrol 5W30", "Pasillo B - Estante 1", "5 unidades"),
-                _buildInfoTile("Filtro Aire Sentra", "Pasillo A - Estante 2", "20 unidades"),
-              ]),
+                  const SizedBox(height: 25),
+                  _buildSectionHeader("CATEGORÍAS"),
+                  const SizedBox(height: 15),
+                  _buildCategories(),
+                  const SizedBox(height: 30),
+                  _buildSectionHeader("RESULTADOS DISPONIBLES"),
+                ],
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _buildStockCard(),
+              childCount: 10, // Simulando muchos items
             ),
           ),
         ],
@@ -41,22 +58,69 @@ class ConsultorDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoTile(String part, String location, String stock) {
+  Widget _buildSectionHeader(String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: const TextStyle(color: Colors.white54, fontWeight: FontWeight.bold, fontSize: 12)),
+        const Icon(Icons.filter_list, color: Colors.blueAccent, size: 18),
+      ],
+    );
+  }
+
+  Widget _buildCategories() {
+    final cats = ["Motor", "Frenos", "Suspensión", "Eléctrico", "Llantas"];
+    return SizedBox(
+      height: 40,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: cats.length,
+        itemBuilder: (context, i) => Container(
+          margin: const EdgeInsets.only(right: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: Colors.blueAccent.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.blueAccent.withOpacity(0.3)),
+          ),
+          child: Center(child: Text(cats[i], style: const TextStyle(fontSize: 12))),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStockCard() {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.all(15),
-      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: Colors.blueAccent, width: 4)),
         color: Colors.white.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white10),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(part, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(location, style: const TextStyle(color: Colors.white38, fontSize: 12)),
-          ]),
-          Text(stock, style: const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold)),
+          const Icon(Icons.settings_suggest, color: Colors.blueAccent, size: 30),
+          const SizedBox(width: 15),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Bujía Iridium IX", style: TextStyle(fontWeight: FontWeight.bold)),
+                Text("Marca: NGK | Pasillo 4-B", style: TextStyle(color: Colors.white38, fontSize: 11)),
+              ],
+            ),
+          ),
+          Column(
+            children: [
+              const Text("Stock", style: TextStyle(color: Colors.white38, fontSize: 10)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(color: Colors.blueAccent, borderRadius: BorderRadius.circular(5)),
+                child: const Text("45", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              ),
+            ],
+          )
         ],
       ),
     );
