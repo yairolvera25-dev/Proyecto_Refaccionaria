@@ -1,18 +1,21 @@
+// lib/data/services/auth_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // <--- Importa dotenv
 
 class AuthService {
-  // Asegúrate de que esta URL sea la de tu ngrok actual
-  final String _baseUrl = 'https://jeffery-preevolutional-isabel.ngrok-free.dev/api/auth/login';
+  // Obtenemos la URL base del .env, con un fallback por si falla
+  final String _baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:4000/api';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
+    final url = Uri.parse('$_baseUrl/auth/login'); // Construimos la ruta final
+
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        url,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'ngrok-skip-browser-warning': 'true', 
         },
         body: jsonEncode({
           'email': email.trim(),
@@ -27,7 +30,7 @@ class AuthService {
         throw error['msg'] ?? 'Error en las credenciales';
       }
     } catch (e) {
-      throw e.toString();
+      throw "Error de conexión: Verifica que el servidor esté encendido."; 
     }
   }
 }

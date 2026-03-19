@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
-import 'ui/screens/login/login_screen.dart'; // Verifica que la ruta sea esta
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // <--- 1. Importa esto
+import 'ui/screens/login/login_screen.dart';
 
-void main() => runApp(const RefaccionariaApp());
+// 2. Convierte el main en asíncrono
+Future<void> main() async {
+  // Inicializamos los bindings de Flutter antes de cargar un asset
+  WidgetsFlutterBinding.ensureInitialized();
+  // 3. Inicializa dotenv antes de arrancar la app
+  await dotenv.load(fileName: ".env"); 
+  runApp(const RefaccionariaApp());
+}
 
 class RefaccionariaApp extends StatelessWidget {
   const RefaccionariaApp({super.key});

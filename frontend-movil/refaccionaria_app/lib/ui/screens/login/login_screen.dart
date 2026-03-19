@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:ui';
-import '../../widgets/background_effects.dart'; // IMPORTANTE: Ruta correcta
+import 'package:flutter/material.dart';
+import 'dart:convert';
+
+// 1. IMPORTACIONES ABSOLUTAS (A prueba de errores de carpetas)
+import 'package:refaccionaria_app/data/services/auth_service.dart'; 
+import 'package:refaccionaria_app/ui/widgets/background_effects.dart'; 
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -17,6 +19,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
   bool _isLoading = false;
+
+  // 2. INSTANCIAMOS EL SERVICIO
+  final AuthService _authService = AuthService();
 
   late AnimationController _mainController;
   List<Particle> roleParticles = [];
@@ -60,48 +65,39 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     });
   }
 
+  // 3. EL MÉTODO LIMPIO
   Future<void> _intentarLogin() async {
+    if (_userController.text.isEmpty || _passController.text.isEmpty) {
+      _mostrarError("Por favor, llena todos los campos");
+      return;
+    }
+
     setState(() => _isLoading = true);
-    final url = Uri.parse('https://jeffery-preevolutional-isabel.ngrok-free.dev/api/auth/login');
     
     try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'ngrok-skip-browser-warning': 'true', 
-        },
-        body: jsonEncode({
-          'email': _userController.text.trim(),
-          'password': _passController.text.trim(),
-        }),
+      final data = await _authService.login(
+        _userController.text,
+        _passController.text,
       );
 
-      setState(() => _isLoading = false);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        String serverRole = data['user']['role'].toString().toLowerCase();
-        _navegarDashboard(serverRole);
-      } else {
-        final errorMsg = jsonDecode(response.body);
-        _mostrarError(errorMsg['msg'] ?? "Credenciales incorrectas");
-      }
+      String serverRole = data['user']['role'].toString().toLowerCase();
+      _navegarDashboard(serverRole);
+      
     } catch (e) {
-      setState(() => _isLoading = false);
-      _mostrarError("Error de conexión. Revisa el servidor/ngrok.");
+      _mostrarError(e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _navegarDashboard(String role) {
     Widget page;
     if (role == 'administrador') {
-      page = AdminDashboard();
+      page = const AdminDashboard();
     } else if (role == 'vendedor') {
-      page = VendedorDashboard();
+      page = const VendedorDashboard();
     } else {
-      page = ConsultorDashboard();
+      page = const ConsultorDashboard();
     }
     Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
@@ -280,6 +276,6 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
 }
 
 // --- DASHBOARDS TEMPORALES ---
-class AdminDashboard extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("ADMIN")), body: const Center(child: Text("Bienvenido Admin"))); }
-class VendedorDashboard extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
-class ConsultorDashboard extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }
+class AdminDashboard extends StatelessWidget { const AdminDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("ADMIN")), body: const Center(child: Text("Bienvenido Admin"))); }
+class VendedorDashboard extends StatelessWidget { const VendedorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
+class ConsultorDashboard extends StatelessWidget { const ConsultorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }
