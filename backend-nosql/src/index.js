@@ -31,5 +31,5 @@ const PORT = process.env.PORT || 4000; // Cambié a 4000 que es el que usas en t
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en el puerto: ${PORT}`);
   console.log(`🔗 Local: http://localhost:${PORT}`);
-  console.log(`✅ ¡Conexión exitosa a la Refaccionaria, abejito!`);
+  console.log(`✅ ¡Conexión exitosa a la Refaccionaria!`);
 });
