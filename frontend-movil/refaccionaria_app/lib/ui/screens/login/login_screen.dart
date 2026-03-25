@@ -1,8 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // <--- ESTO ARREGLA CASI TODOS LOS ERRORES
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:ui';
-import '../../widgets/background_effects.dart'; // IMPORTANTE: Ruta correcta
+
+// IMPORTACIONES CON LA RUTA EXACTA SEGÚN TU IMAGEN
+import '../../widgets/background_effects.dart'; 
+import 'dashboard/vendedor_dashboard.dart';
+import 'dashboard/consultor_dashboard.dart';
+import 'dashboard/admin_dashboard.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -95,15 +100,13 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   }
 
   void _navegarDashboard(String role) {
-    Widget page;
-    if (role == 'administrador') {
-      page = AdminDashboard();
+    if (role == 'administrador' || role == 'admin') {
+      Navigator.pushReplacementNamed(context, '/admin');
     } else if (role == 'vendedor') {
-      page = VendedorDashboard();
+      Navigator.pushReplacementNamed(context, '/vendedor');
     } else {
-      page = ConsultorDashboard();
+      Navigator.pushReplacementNamed(context, '/consultor');
     }
-    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
 
   void _mostrarError(String mensaje) {
@@ -141,7 +144,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
                   children: [
                     const SizedBox(height: 50),
                     const Icon(Icons.engineering_rounded, size: 70, color: Color(0xFF818CF8)),
-                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6)),
+                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Colors.white)),
                     const SizedBox(height: 70),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -243,9 +246,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     return TextField(
       controller: controller,
       obscureText: obscure,
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         prefixIcon: Icon(icon, size: 20, color: activeColor.withOpacity(0.5)),
         hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white30),
         filled: true,
         fillColor: Colors.black26,
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
@@ -278,8 +283,3 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     );
   }
 }
-
-// --- DASHBOARDS TEMPORALES ---
-class AdminDashboard extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("ADMIN")), body: const Center(child: Text("Bienvenido Admin"))); }
-class VendedorDashboard extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
-class ConsultorDashboard extends StatelessWidget { @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }
