@@ -1,13 +1,10 @@
-import 'package:flutter/material.dart'; // <--- ESTO ARREGLA CASI TODOS LOS ERRORES
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'dart:convert';
 
-// IMPORTACIONES CON LA RUTA EXACTA SEGÚN TU IMAGEN
-import '../../widgets/background_effects.dart'; 
-import 'dashboard/vendedor_dashboard.dart';
-import 'dashboard/consultor_dashboard.dart';
-import 'dashboard/admin_dashboard.dart';
+// 1. IMPORTACIONES ABSOLUTAS (A prueba de errores de carpetas)
+import 'package:refaccionaria_app/data/services/auth_service.dart'; 
+import 'package:refaccionaria_app/ui/widgets/background_effects.dart'; 
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -22,6 +19,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
   bool _isLoading = false;
+
+  // 2. INSTANCIAMOS EL SERVICIO
+  final AuthService _authService = AuthService();
 
   late AnimationController _mainController;
   List<Particle> roleParticles = [];
@@ -65,48 +65,41 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     });
   }
 
+  // 3. EL MÉTODO LIMPIO
   Future<void> _intentarLogin() async {
+    if (_userController.text.isEmpty || _passController.text.isEmpty) {
+      _mostrarError("Por favor, llena todos los campos");
+      return;
+    }
+
     setState(() => _isLoading = true);
-    final url = Uri.parse('https://jeffery-preevolutional-isabel.ngrok-free.dev/api/auth/login');
     
     try {
-      final response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'ngrok-skip-browser-warning': 'true', 
-        },
-        body: jsonEncode({
-          'email': _userController.text.trim(),
-          'password': _passController.text.trim(),
-        }),
+      final data = await _authService.login(
+        _userController.text,
+        _passController.text,
       );
 
-      setState(() => _isLoading = false);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        String serverRole = data['user']['role'].toString().toLowerCase();
-        _navegarDashboard(serverRole);
-      } else {
-        final errorMsg = jsonDecode(response.body);
-        _mostrarError(errorMsg['msg'] ?? "Credenciales incorrectas");
-      }
+      String serverRole = data['user']['role'].toString().toLowerCase();
+      _navegarDashboard(serverRole);
+      
     } catch (e) {
-      setState(() => _isLoading = false);
-      _mostrarError("Error de conexión. Revisa el servidor/ngrok.");
+      _mostrarError(e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _navegarDashboard(String role) {
-    if (role == 'administrador' || role == 'admin') {
-      Navigator.pushReplacementNamed(context, '/admin');
+    Widget page;
+    if (role == 'administrador') {
+      page = const AdminDashboard();
     } else if (role == 'vendedor') {
-      Navigator.pushReplacementNamed(context, '/vendedor');
+      page = const VendedorDashboard();
     } else {
-      Navigator.pushReplacementNamed(context, '/consultor');
+      page = const ConsultorDashboard();
     }
+    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
 
   void _mostrarError(String mensaje) {
@@ -144,7 +137,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
                   children: [
                     const SizedBox(height: 50),
                     const Icon(Icons.engineering_rounded, size: 70, color: Color(0xFF818CF8)),
-                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Colors.white)),
+                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6)),
                     const SizedBox(height: 70),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -246,11 +239,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     return TextField(
       controller: controller,
       obscureText: obscure,
-      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         prefixIcon: Icon(icon, size: 20, color: activeColor.withOpacity(0.5)),
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white30),
         filled: true,
         fillColor: Colors.black26,
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide(color: Colors.white.withOpacity(0.05))),
@@ -283,3 +274,8 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     );
   }
 }
+
+// --- DASHBOARDS TEMPORALES ---
+class AdminDashboard extends StatelessWidget { const AdminDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("ADMIN")), body: const Center(child: Text("Bienvenido Admin"))); }
+class VendedorDashboard extends StatelessWidget { const VendedorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
+class ConsultorDashboard extends StatelessWidget { const ConsultorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }

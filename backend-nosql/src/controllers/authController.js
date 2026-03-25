@@ -14,7 +14,7 @@ const register = async (req, res) => {
         const nuevoUsuario = new User({ nombre, email, password, role });
         await nuevoUsuario.save();
 
-        res.json({ mensaje: "✅ Usuario registrado con éxito, abejito" });
+        res.json({ mensaje: "✅ Usuario registrado con éxito" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ msg: "❌ Error al registrar el usuario" });
