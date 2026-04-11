@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart'; // <--- Importa dotenv
 
 class AuthService {
   // Obtenemos la URL base del .env, con un fallback por si falla
-  final String _baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:4000/api';
+  final String _baseUrl = dotenv.env['VITE_API_URL_NOSQL'] ?? 'http://localhost:4000/api';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final url = Uri.parse('$_baseUrl/auth/login'); // Construimos la ruta final

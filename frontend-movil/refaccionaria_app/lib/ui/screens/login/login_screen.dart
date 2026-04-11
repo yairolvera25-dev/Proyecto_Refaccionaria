@@ -80,7 +80,16 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
         _passController.text,
       );
 
-      String serverRole = data['user']['role'].toString().toLowerCase();
+      // Convertimos a minúsculas para evitar problemas de "Administrador" vs "administrador"
+      String serverRole = data['user']['rol'].toString().toLowerCase(); 
+      String uiRole = selectedRole!.toLowerCase();
+
+      // Validación opcional pero recomendada:
+      if (serverRole != uiRole) {
+         _mostrarError("Ese correo no pertenece al rol de $selectedRole");
+         return; // Evitamos que entre si seleccionó el botón equivocado
+      }
+
       _navegarDashboard(serverRole);
       
     } catch (e) {
@@ -239,6 +248,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     return TextField(
       controller: controller,
       obscureText: obscure,
+      style: const TextStyle(color: Colors.white), 
       decoration: InputDecoration(
         prefixIcon: Icon(icon, size: 20, color: activeColor.withOpacity(0.5)),
         hintText: hint,
