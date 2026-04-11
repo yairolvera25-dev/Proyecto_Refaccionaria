@@ -19,6 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // 4. Rutas del Sistema
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/ventas', require('./routes/venta'));
+
 
 // Ruta de prueba para verificar que el backend responde
 app.get('/', (req, res) => {

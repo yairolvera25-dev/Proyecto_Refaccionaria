@@ -4,12 +4,13 @@ const UserSchema = new mongoose.Schema({
     nombre: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    // Aquí definimos los puestos de la refaccionaria
-    role: { 
-        type: String, 
-        enum: ['cliente', 'administrador', 'consultor', 'vendedor'], 
-        default: 'cliente' 
-    }
-});
+    id_rol: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        required: true
+    },
+    id_sucursal: { type: Number, required: true },
+    activo: { type: Boolean, default: true }
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
