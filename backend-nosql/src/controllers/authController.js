@@ -1,59 +1,52 @@
 const User = require('../models/User');
+const Role = require('../models/Role');
 
-// Lógica para registrar usuarios
-const register = async (req, res) => {
+exports.register = async (req, res) => {
     try {
-        const { nombre, email, password, role } = req.body;
+        const { nombre, email, password, nombre_rol, id_sucursal } = req.body;
 
-        // Verificar si el usuario ya existe para evitar duplicados
-        const existeUsuario = await User.findOne({ email });
-        if (existeUsuario) {
-            return res.status(400).json({ msg: "❌ El correo ya está registrado" });
-        }
+        const existe = await User.findOne({ email });
+        if (existe) return res.status(400).json({ msg: "❌ El correo ya existe" });
 
-        const nuevoUsuario = new User({ nombre, email, password, role });
+        // Buscamos el rol en la colección 'roles'
+        const rolDoc = await Role.findOne({ nombre_rol: nombre_rol || 'Vendedor' });
+        if (!rolDoc) return res.status(400).json({ msg: "❌ El rol no existe en la base de datos" });
+
+        const nuevoUsuario = new User({
+            nombre,
+            email,
+            password,
+            id_rol: rolDoc._id,
+            id_sucursal: id_sucursal || 1
+        });
+
         await nuevoUsuario.save();
-
-        res.json({ mensaje: "✅ Usuario registrado con éxito" });
+        res.json({ msg: "✅ Registrado con éxito", rol: rolDoc.nombre_rol });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ msg: "❌ Error al registrar el usuario" });
+        res.status(500).json({ msg: "❌ Error", error: error.message });
     }
 };
 
-// Lógica para iniciar sesión
-const login = async (req, res) => {
+exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
+        // El .populate trae el nombre del rol en lugar de solo el ID
+        const user = await User.findOne({ email }).populate('id_rol');
 
-        // 1. Buscamos al usuario por correo
-        const usuarioEncontrado = await User.findOne({ email });
-
-        // 2. Si no existe, mandamos error 401 (No autorizado)
-        if (!usuarioEncontrado) {
-            return res.status(401).json({ msg: "❌ El correo no está registrado" });
+        if (!user || user.password !== password) {
+            return res.status(401).json({ msg: "❌ Credenciales incorrectas" });
         }
 
-        // 3. Verificamos la contraseña (texto plano por ahora)
-        if (usuarioEncontrado.password !== password) {
-            return res.status(401).json({ msg: "❌ Contraseña incorrecta" });
-        }
-
-        // 4. RESPUESTA ESPECIAL: Envolvemos los datos en un objeto "user"
         res.json({
             exito: true,
             user: {
-                nombre: usuarioEncontrado.nombre,
-                email: usuarioEncontrado.email,
-                role: usuarioEncontrado.role // Aquí dirá 'administrador', 'vendedor', etc.
+                id: user._id,
+                nombre: user.nombre,
+                rol: user.id_rol.nombre_rol,
+                id_sucursal: user.id_sucursal
             }
         });
-
     } catch (error) {
-        console.error("Error en el servidor:", error);
-        res.status(500).json({ msg: "❌ Error interno del servidor" });
+        res.status(500).json({ msg: "❌ Error en login" });
     }
 };
-
-// Exportamos las funciones
-module.exports = { register, login };
