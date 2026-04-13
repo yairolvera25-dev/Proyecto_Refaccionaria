@@ -8,17 +8,90 @@ use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    // 1. LEER (Obtener todos los productos)
+    // --- MÉTODOS PARA EL DASHBOARD (VUE) ---
+
     public function index()
     {
-        // Traemos los productos y de paso incluimos los datos de su categoría
-        return response()->json(Producto::all(), 200);
+        $productos = Producto::all();
+        $resultado = $productos->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'nombre' => $p->nombre,
+                'sku' => $p->sku,
+                'precio' => (float) $p->precio_venta,
+                'stock' => $p->stock_minimo 
+            ];
+        });
+        return response()->json($resultado, 200);
     }
 
-    // 2. CREAR (Guardar un producto nuevo)
+    public function buscar(Request $request)
+    {
+        $q = $request->query('q');
+        if (!$q) return response()->json([]);
+
+        $productos = Producto::where('nombre', 'LIKE', "%{$q}%")
+            ->orWhere('sku', 'LIKE', "%{$q}%")
+            ->orWhere('marca', 'LIKE', "%{$q}%")
+            ->take(15)
+            ->get();
+
+        $resultado = $productos->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'nombre' => $p->nombre . " (" . $p->marca . ")",
+                'sku' => $p->sku,
+                'precio' => (float) $p->precio_venta,
+                'stock' => $p->stock_minimo
+            ];
+        });
+
+        return response()->json($resultado);
+    }
+
+    public function bajoStock()
+    {
+        // 1. Traemos TODOS los productos unidos con su inventario (sin filtros SQL que se rompan)
+        $productos = Producto::join('inventario_sucursal', 'productos.id', '=', 'inventario_sucursal.id_producto')
+            ->select('productos.*', 'inventario_sucursal.cantidad')
+            ->get();
+
+        // 2. Usamos PHP puro para filtrar la lista. ¡Esto no falla!
+        $criticos = $productos->filter(function ($prod) {
+            // Si el stock_minimo es nulo, vacío, o cero, le asignamos 5 por defecto.
+            $minimo = !empty($prod->stock_minimo) ? $prod->stock_minimo : 5;
+            
+            // ¿La cantidad en bodega es menor o igual al mínimo permitido?
+            return $prod->cantidad <= $minimo;
+        })->values(); // values() reordena el arreglo para que Vue lo lea bien
+
+        // 3. Enviamos solo los que no pasaron la prueba
+        return response()->json($criticos);
+    }
+
+    public function descontarStock(Request $request)
+    {
+        $items = $request->input('items');
+
+        if (!$items) {
+            return response()->json(['error' => 'No se enviaron items'], 400);
+        }
+
+        foreach ($items as $item) {
+            $producto = Producto::find($item['id']);
+            if ($producto) {
+                $producto->stock_minimo = $producto->stock_minimo - $item['cantidad'];
+                $producto->save();
+            }
+        }
+
+        return response()->json(['mensaje' => 'Stock descontado con éxito en MySQL']);
+    }
+
+    // --- MÉTODOS CRUD ORIGINALES ---
+
     public function store(Request $request)
     {
-        // Validamos que no falten datos (Como lo pide tu tarjeta)
         $request->validate([
             'sku' => 'required|unique:productos',
             'nombre' => 'required|string',
@@ -33,7 +106,6 @@ class ProductoController extends Controller
         return response()->json(['mensaje' => 'Producto creado con éxito', 'data' => $producto], 201);
     }
 
-    // 3. LEER UNO (Ver el detalle de un solo producto)
     public function show($id)
     {
         $producto = Producto::find($id);
@@ -43,7 +115,6 @@ class ProductoController extends Controller
         return response()->json($producto, 200);
     }
 
-    // 4. ACTUALIZAR (Editar un producto existente)
     public function update(Request $request, $id)
     {
         $producto = Producto::find($id);
@@ -55,7 +126,6 @@ class ProductoController extends Controller
         return response()->json(['mensaje' => 'Producto actualizado', 'data' => $producto], 200);
     }
 
-    // 5. BORRAR (Eliminar una refacción)
     public function destroy($id)
     {
         $producto = Producto::find($id);
@@ -67,4 +137,3 @@ class ProductoController extends Controller
         return response()->json(['mensaje' => 'Producto eliminado correctamente'], 200);
     }
 }
-
