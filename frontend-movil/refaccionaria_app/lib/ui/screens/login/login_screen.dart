@@ -2,9 +2,16 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
-// 1. IMPORTACIONES ABSOLUTAS (A prueba de errores de carpetas)
+// 1. IMPORTACIONES CORREGIDAS
+// Asegúrate de que estas rutas coincidan con tus archivos reales
 import 'package:refaccionaria_app/data/services/auth_service.dart'; 
 import 'package:refaccionaria_app/ui/widgets/background_effects.dart'; 
+
+// IMPORTANTE: Aquí importamos tus pantallas profesionales
+import 'package:refaccionaria_app/ui/screens/login/dashboard/consultor_dashboard.dart';
+// Si tienes las de Admin y Vendedor, impórtalas igual:
+// import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart';
+// import 'package:refaccionaria_app/ui/screens/login/dashboard/vendedor_dashboard.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -20,13 +27,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   final TextEditingController _passController = TextEditingController();
   bool _isLoading = false;
 
-  // 2. INSTANCIAMOS EL SERVICIO
   final AuthService _authService = AuthService();
-
   late AnimationController _mainController;
-  List<Particle> roleParticles = [];
   List<Meteor> meteors = [];
   List<MouseParticle> mouseTrail = [];
+  List<Particle> roleParticles = [];
 
   @override
   void initState() {
@@ -43,6 +48,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     super.dispose();
   }
 
+  // ... (Aquí van tus métodos _onMouseHover y _onRoleTap igual que los tenías) ...
   void _onMouseHover(PointerEvent details) {
     setState(() {
       mouseTrail.add(MouseParticle(details.localPosition.dx, details.localPosition.dy, activeColor));
@@ -59,13 +65,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
       _passController.clear();
       roleParticles = List.generate(50, (index) => Particle(color));
     });
-
     Future.delayed(const Duration(milliseconds: 1200), () {
       if (mounted) setState(() => isSplashing = false);
     });
   }
 
-  // 3. EL MÉTODO LIMPIO
   Future<void> _intentarLogin() async {
     if (_userController.text.isEmpty || _passController.text.isEmpty) {
       _mostrarError("Por favor, llena todos los campos");
@@ -80,20 +84,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
         _passController.text,
       );
 
-      // Convertimos a minúsculas para evitar problemas de "Administrador" vs "administrador"
       String serverRole = data['user']['rol'].toString().toLowerCase(); 
-      String uiRole = selectedRole!.toLowerCase();
-
-      // Validación opcional pero recomendada:
-      if (serverRole != uiRole) {
-         _mostrarError("Ese correo no pertenece al rol de $selectedRole");
-         return; // Evitamos que entre si seleccionó el botón equivocado
-      }
-
       _navegarDashboard(serverRole);
       
     } catch (e) {
-      _mostrarError(e.toString());
+      _mostrarError("Error: Credenciales incorrectas o servidor apagado");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -102,11 +97,12 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   void _navegarDashboard(String role) {
     Widget page;
     if (role == 'administrador') {
-      page = const AdminDashboard();
+      page = const ConsultorDashboard(); // Cambia por AdminDashboard si ya lo tienes
     } else if (role == 'vendedor') {
-      page = const VendedorDashboard();
+      page = const ConsultorDashboard(); // Cambia por VendedorDashboard si ya lo tienes
     } else {
-      page = const ConsultorDashboard();
+      // AQUÍ ES DONDE LLAMAMOS A TU PANTALLA PROFESIONAL
+      page = const ConsultorDashboard(); 
     }
     Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
@@ -146,7 +142,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
                   children: [
                     const SizedBox(height: 50),
                     const Icon(Icons.engineering_rounded, size: 70, color: Color(0xFF818CF8)),
-                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6)),
+                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Colors.white)),
                     const SizedBox(height: 70),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -172,6 +168,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     );
   }
 
+  // ... (Aquí siguen tus widgets _buildRoleButton, _buildGlassForm, _buildField y _buildSplashOverlay igual) ...
   Widget _buildRoleButton(String role, IconData icon, Color color) {
     bool isSelected = selectedRole == role;
     return GestureDetector(
@@ -285,7 +282,4 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   }
 }
 
-// --- DASHBOARDS TEMPORALES ---
-class AdminDashboard extends StatelessWidget { const AdminDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("ADMIN")), body: const Center(child: Text("Bienvenido Admin"))); }
-class VendedorDashboard extends StatelessWidget { const VendedorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
-class ConsultorDashboard extends StatelessWidget { const ConsultorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }
+// --- HE BORRADO LOS DASHBOARDS TEMPORALES QUE ESTABAN AQUÍ ---
