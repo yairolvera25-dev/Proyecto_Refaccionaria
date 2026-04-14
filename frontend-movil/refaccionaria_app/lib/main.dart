@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ui/screens/login/login_screen.dart';
 import 'ui/screens/dashboard/vendedor/vendedor_main_screen.dart';
 import 'ui/screens/login/dashboard/admin_dashboard.dart';
+import 'ui/screens/login/dashboard/consultor_dashboard.dart';
 
 // 2. Convierte el main en asíncrono
 Future<void> main() async {
