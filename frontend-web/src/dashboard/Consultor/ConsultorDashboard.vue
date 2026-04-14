@@ -11,6 +11,11 @@
           <i class="icon">🔔</i>
           <span v-if="criticosCount > 0" class="badge-red">{{ criticosCount }}</span>
         </button>
+
+        <button class="logout-btn" @click="cerrarSesion" title="Cerrar Sesión">
+          <span class="logout-icon">Logout</span>
+          <i class="icon">🚪</i>
+        </button>
       </div>
     </header>
 
@@ -61,6 +66,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router'; // Para la redirección del botón salir
 
 // IMPORTACIÓN DE COMPONENTES DE INTERFAZ
 import TopStats from '../../components/ConsultorUI/TopStats.vue';
@@ -71,12 +77,21 @@ import ActionModals from '../../components/ConsultorUI/ActionModals.vue';
 // LÓGICA DE EXPORTACIÓN A EXCEL Y PDF
 import { generarPDF, generarExcel } from '../../utils/exportData.js';
 
+// Inicializamos el enrutador
+const router = useRouter();
+
 // ESTADOS REACTIVOS
 const inventory = ref([]);
 const isRefreshing = ref(false);
 const showNotifications = ref(false);
 const showExport = ref(false);
 const selectedItem = ref(null);
+
+// Lógica para cerrar sesión y volver a la raíz
+const cerrarSesion = () => {
+  console.log("Cerrando sesión...");
+  router.push('/'); 
+};
 
 // Contador dinámico para la campana de alertas
 const criticosCount = computed(() => {
@@ -213,6 +228,13 @@ onMounted(cargarDatos);
   text-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
 }
 
+/* CONTENEDOR DE BOTONES DE CABECERA */
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
 /* BOTÓN DE NOTIFICACIONES */
 .icon-btn {
   background: #1A1D24;
@@ -234,6 +256,24 @@ onMounted(cargarDatos);
   background: #232730;
   border-color: #39FF14;
 }
+
+/* ESTILOS DEL NUEVO BOTÓN DE SALIR */
+.logout-btn {
+  background: #1A1D24; 
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px; 
+  padding: 0 15px; 
+  height: 48px; 
+  color: #FF5252;
+  cursor: pointer; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 8px;
+  transition: all 0.2s;
+}
+.logout-btn:hover { background: #2a1a1a; border-color: #FF5252; }
+.logout-icon { font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; }
 
 .badge-red {
   position: absolute;
