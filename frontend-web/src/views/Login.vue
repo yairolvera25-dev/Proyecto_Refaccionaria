@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, computed, reactive } from 'vue';
 import FondoMeteoritos from '../components/FondoMeteoritos.vue'; 
 import { useRouter } from 'vue-router';
@@ -43,6 +43,7 @@ const tema = computed(() => {
 // FUNCIÓN DE LOGIN REAL
 const iniciarSesion = async () => {
   mensaje.texto = '';
+  router.push('/dashboard/administrador');
   cargando.value = true;
 
   try {

@@ -1,19 +1,27 @@
 import axios from 'axios';
 
-// Usamos la variable de entorno que definiste en el .env
-const API_URL = import.meta.env.VITE_API_URL_NOSQL;
+const API_URL = 'http://localhost:4000/api/auth';
 
 export const authService = {
-    async login(email, password) {
+    login: async (email, password) => {
         try {
-            // Ahora la URL se construye automáticamente (ej: http://localhost:4000/api/auth/login)
-            const response = await axios.post(`${API_URL}/auth/login`, { email, password });
-
-            // Si el login es exitoso, devolvemos los datos (que ya traen el ROL que configuramos en Mongo)
+            const response = await axios.post(`${API_URL}/login`, { email, password });
+            // Retornamos data.exito y data.user para que coincida con tu Login.vue
+            return {
+                exito: true,
+                user: response.data.user || response.data
+            };
+        } catch (error) {
+            const message = error.response?.data?.message || "Error en el servidor";
+            throw new Error(message);
+        }
+    },
+    register: async (userData) => {
+        try {
+            const response = await axios.post(`${API_URL}/register`, userData);
             return response.data;
         } catch (error) {
-            // Formateamos el error para que la vista lo entienda fácilmente
-            throw new Error(error.response?.data?.msg || 'Error de conexión con el servidor');
+            throw error;
         }
     }
 };
