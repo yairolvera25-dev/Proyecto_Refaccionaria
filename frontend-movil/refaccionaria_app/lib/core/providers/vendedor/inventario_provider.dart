@@ -6,55 +6,82 @@ class InventarioProvider extends ChangeNotifier {
   final InventarioService _service = InventarioService();
 
   List<ProductoModel> _productos = [];
-  List<ProductoModel> _productosFiltrados = []; // <--- Nueva lista para el buscador
-  bool _cargando = false; // <--- Cambiamos nombre si es necesario para que coincida con 'cargando'
+  List<ProductoModel> _productosFiltrados = [];
+  bool _cargando = false;
   String _errorMessage = '';
 
-  // Getters unificados
   List<ProductoModel> get productos => _productos;
   List<ProductoModel> get productosFiltrados => _productosFiltrados;
   bool get cargando => _cargando;
-  bool get isLoading => _cargando; // Alias para compatibilidad
+  bool get isLoading => _cargando;
   String get errorMessage => _errorMessage;
 
   InventarioProvider() {
     cargarInventario();
   }
 
-  // Alias para mantener compatibilidad con InventarioScreen
   Future<void> cargarProductos() => cargarInventario();
 
   Future<void> cargarInventario() async {
     _cargando = true;
     _errorMessage = '';
     notifyListeners();
+
     try {
       _productos = await _service.getProductos();
-      _productosFiltrados = _productos; // Al inicio, filtrados es igual a todos
+      _productosFiltrados = List.from(_productos);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      print("Error cargando inventario: $e");
     } finally {
       _cargando = false;
       notifyListeners();
     }
   }
 
-  void limpiarError() {
-    _errorMessage = '';
+  Future<void> agregarProducto(ProductoModel producto) async {
+    try {
+      await _service.crearProducto(producto);
+      await cargarInventario();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<void> actualizarProducto(ProductoModel producto) async {
+    try {
+      await _service.actualizarProducto(producto);
+      await cargarInventario();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<void> eliminarProducto(int id) async {
+    try {
+      await _service.eliminarProducto(id);
+      await cargarInventario();
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
+  void filtrarPorTexto(String query) {
+    if (query.isEmpty) {
+      _productosFiltrados = List.from(_productos);
+    } else {
+      _productosFiltrados = _productos.where((p) {
+        return p.nombre.toLowerCase().contains(query.toLowerCase()) ||
+            p.sku.toLowerCase().contains(query.toLowerCase());
+      }).toList();
+    }
     notifyListeners();
   }
 
-  // 👇 ESTA ES LA FUNCIÓN QUE PIDE EL BUSCADOR DEL POS
-  void filtrarPorTexto(String query) {
-    if (query.isEmpty) {
-      _productosFiltrados = _productos;
-    } else {
-      _productosFiltrados = _productos
-          .where((p) => p.nombre.toLowerCase().contains(query.toLowerCase()) || 
-                        p.sku.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    }
-    notifyListeners(); // Avisa al POS que la lista cambió
+  void limpiarError() {
+    _errorMessage = '';
+    notifyListeners();
   }
 }
