@@ -4,7 +4,8 @@ import 'dart:convert';
 
 // 1. IMPORTACIONES ABSOLUTAS (A prueba de errores de carpetas)
 import 'package:refaccionaria_app/data/services/auth_service.dart'; 
-import 'package:refaccionaria_app/ui/widgets/background_effects.dart'; 
+import 'package:refaccionaria_app/ui/widgets/background_effects.dart';
+import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart'; 
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -67,37 +68,21 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
 
   // 3. EL MÉTODO LIMPIO
   Future<void> _intentarLogin() async {
-    if (_userController.text.isEmpty || _passController.text.isEmpty) {
-      _mostrarError("Por favor, llena todos los campos");
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    
-    try {
-      final data = await _authService.login(
-        _userController.text,
-        _passController.text,
-      );
-
-      // Convertimos a minúsculas para evitar problemas de "Administrador" vs "administrador"
-      String serverRole = data['user']['rol'].toString().toLowerCase(); 
-      String uiRole = selectedRole!.toLowerCase();
-
-      // Validación opcional pero recomendada:
-      if (serverRole != uiRole) {
-         _mostrarError("Ese correo no pertenece al rol de $selectedRole");
-         return; // Evitamos que entre si seleccionó el botón equivocado
-      }
-
-      _navegarDashboard(serverRole);
-      
-    } catch (e) {
-      _mostrarError(e.toString());
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  if (selectedRole == null) {
+    _mostrarError("Selecciona un rol");
+    return;
   }
+
+  String role = selectedRole!.toLowerCase();
+
+  if (role == "administrador") {
+    _navegarDashboard("administrador");
+  } else if (role == "vendedor") {
+    _navegarDashboard("vendedor");
+  } else {
+    _navegarDashboard("consultor");
+  }
+}
 
   void _navegarDashboard(String role) {
     Widget page;
@@ -286,6 +271,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
 }
 
 // --- DASHBOARDS TEMPORALES ---
-class AdminDashboard extends StatelessWidget { const AdminDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("ADMIN")), body: const Center(child: Text("Bienvenido Admin"))); }
 class VendedorDashboard extends StatelessWidget { const VendedorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
 class ConsultorDashboard extends StatelessWidget { const ConsultorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }
+
+

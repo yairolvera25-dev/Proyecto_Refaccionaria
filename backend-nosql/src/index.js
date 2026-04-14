@@ -9,9 +9,9 @@ const app = express();
 conectarDB();
 
 // 2. Configuración de CORS Mejorada
-// Al usar app.use(cors()) sin parámetros, permites TODO por defecto.
+// Al usar app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] })) sin parámetros, permites TODO por defecto.
 // Es lo mejor para desarrollo local entre varios dispositivos.
-app.use(cors());
+app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
 
 // 3. Middleware para entender datos JSON (Debe ir antes de las rutas)
 app.use(express.json());

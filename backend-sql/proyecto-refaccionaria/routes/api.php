@@ -14,3 +14,8 @@ Route::apiResource('productos', ProductoController::class);
 // Agrégalo junto a tus otras rutas personalizadas
 Route::post('productos/descontar-stock', [ProductoController::class, 'descontarStock']);
 
+use App\Http\Controllers\SucursalController;
+use App\Http\Controllers\CategoriaController;
+
+Route::get('/sucursales', [SucursalController::class, 'index']);
+Route::get('/categorias', [CategoriaController::class, 'index']);
