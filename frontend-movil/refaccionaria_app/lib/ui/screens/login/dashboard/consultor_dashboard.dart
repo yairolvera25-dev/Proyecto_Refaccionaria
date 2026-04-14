@@ -4,6 +4,7 @@ import 'package:refaccionaria_app/data/services/stock_service.dart';
 import 'package:refaccionaria_app/models/venta_model.dart';
 import 'package:refaccionaria_app/ui/widgets/stat_card.dart';
 import 'package:refaccionaria_app/data/services/report_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ConsultorDashboard extends StatefulWidget {
   const ConsultorDashboard({super.key});
@@ -120,112 +121,197 @@ class _ConsultorDashboardState extends State<ConsultorDashboard>
 
   // ─── HEADER ───────────────────────────────────────────────────────────────
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Logo + título con gradiente
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    margin: const EdgeInsets.only(right: 6),
-                    decoration: const BoxDecoration(
-                      color: AppColors.neon,
-                      shape: BoxShape.circle,
-                    ),
+Widget _buildHeader() {
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 6, height: 6,
+                  margin: const EdgeInsets.only(right: 6),
+                  decoration: const BoxDecoration(
+                    color: AppColors.neon,
+                    shape: BoxShape.circle,
                   ),
-                  const Text(
-                    'REFACCIONARIA',
+                ),
+                const Text('REFACCIONARIA',
                     style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 9,
-                      letterSpacing: 3,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 3),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [AppColors.neon, Color(0xFF00BFFF)],
-                ).createShader(bounds),
-                child: const Text(
-                  'LOS AMIGOS CORE',
+                        color: AppColors.textMuted,
+                        fontSize: 9,
+                        letterSpacing: 3,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+            const SizedBox(height: 3),
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [AppColors.neon, Color(0xFF00BFFF)],
+              ).createShader(bounds),
+              child: const Text('LOS AMIGOS CORE',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                    letterSpacing: -0.5,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                      letterSpacing: -0.5)),
+            ),
+          ],
+        ),
+        const Spacer(),
+        AnimatedBuilder(
+          animation: _pulse,
+          builder: (_, __) => Container(
+            width: 7, height: 7,
+            margin: const EdgeInsets.only(right: 10),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.neon.withOpacity(0.3 + 0.7 * _pulse.value),
+            ),
+          ),
+        ),
+        _iconBtn(Icons.refresh_rounded, _fetchData),
+        const SizedBox(width: 8),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            _iconBtn(Icons.notifications_none_rounded, _showNotificaciones),
+            if (_notifCount > 0)
+              Positioned(
+                top: -4, right: -4,
+                child: Container(
+                  width: 16, height: 16,
+                  decoration: const BoxDecoration(
+                      color: Colors.redAccent, shape: BoxShape.circle),
+                  child: Center(
+                    child: Text('$_notifCount',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ),
               ),
-            ],
-          ),
-          const Spacer(),
-          // Dot pulsante
-          AnimatedBuilder(
-            animation: _pulse,
-            builder: (_, __) => Container(
-              width: 7,
-              height: 7,
-              margin: const EdgeInsets.only(right: 10),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.neon.withOpacity(0.3 + 0.7 * _pulse.value),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.neon.withOpacity(0.4 * _pulse.value),
-                    blurRadius: 8,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
+          ],
+        ),
+        const SizedBox(width: 8),
+        // ← BOTÓN SALIR
+        GestureDetector(
+          onTap: _confirmSalir,
+          child: Container(
+            padding: const EdgeInsets.all(9),
+            decoration: BoxDecoration(
+              color: Colors.redAccent.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
             ),
+            child: const Icon(Icons.logout_rounded,
+                color: Colors.redAccent, size: 17),
           ),
-          _iconBtn(Icons.refresh_rounded, _fetchData),
-          const SizedBox(width: 8),
-          // Notificaciones con badge
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              _iconBtn(Icons.notifications_none_rounded, _showNotificaciones),
-              if (_notifCount > 0)
-                Positioned(
-                  top: -4,
-                  right: -4,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$_notifCount',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                        ),
+        ),
+      ],
+    ),
+  );
+}
+
+void _confirmSalir() {
+  showDialog(
+    context: context,
+    builder: (_) => Dialog(
+      backgroundColor: const Color(0xFF1A1D24),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.logout_rounded,
+                  color: Colors.redAccent, size: 28),
+            ),
+            const SizedBox(height: 14),
+            const Text('¿Cerrar sesión?',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Serás redirigido al login.',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.1), width: 0.5),
+                      ),
+                      child: const Center(
+                        child: Text('CANCELAR',
+                            style: TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1)),
                       ),
                     ),
                   ),
                 ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.clear();
+                      if (context.mounted) {
+                        Navigator.pushNamedAndRemoveUntil(
+                            context, '/login', (_) => false);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                            color: Colors.redAccent.withOpacity(0.4),
+                            width: 0.5),
+                      ),
+                      child: const Center(
+                        child: Text('SALIR',
+                            style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1)),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showNotificaciones() {
     final criticos =
@@ -398,7 +484,7 @@ class _ConsultorDashboardState extends State<ConsultorDashboard>
     final pendientes = _stats['pendientes'] ?? 0;
 
     return SizedBox(
-      height: 104,
+      height: 112,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(left: 20, top: 6, bottom: 6),

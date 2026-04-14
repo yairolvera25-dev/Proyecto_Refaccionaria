@@ -83,7 +83,7 @@ class _StatCardState extends State<StatCard> {
                 style: TextStyle(
                   color: _hovered ? widget.color : Colors.white,
                   fontWeight: FontWeight.bold,
-                  fontSize: 17,
+                  fontSize: 15,
                   letterSpacing: -0.5,
                 ),
               ),
