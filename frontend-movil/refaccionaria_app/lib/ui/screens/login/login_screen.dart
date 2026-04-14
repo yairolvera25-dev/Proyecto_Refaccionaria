@@ -2,11 +2,18 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
-// 1. IMPORTACIONES ABSOLUTAS (A prueba de errores de carpetas)
+// 1. IMPORTACIONES CORREGIDAS
+// Asegúrate de que estas rutas coincidan con tus archivos reales
 import 'package:refaccionaria_app/data/services/auth_service.dart'; 
 import 'package:refaccionaria_app/ui/widgets/background_effects.dart';
 import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart'; 
 import 'package:refaccionaria_app/ui/screens/dashboard/vendedor/vendedor_main_screen.dart'; 
+
+// IMPORTANTE: Aquí importamos tus pantallas profesionales
+import 'package:refaccionaria_app/ui/screens/login/dashboard/consultor_dashboard.dart';
+// Si tienes las de Admin y Vendedor, impórtalas igual:
+// import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart';
+// import 'package:refaccionaria_app/ui/screens/login/dashboard/vendedor_dashboard.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -22,13 +29,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   final TextEditingController _passController = TextEditingController();
   bool _isLoading = false;
 
-  // 2. INSTANCIAMOS EL SERVICIO
   final AuthService _authService = AuthService();
-
   late AnimationController _mainController;
-  List<Particle> roleParticles = [];
   List<Meteor> meteors = [];
   List<MouseParticle> mouseTrail = [];
+  List<Particle> roleParticles = [];
 
   @override
   void initState() {
@@ -45,6 +50,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     super.dispose();
   }
 
+  // ... (Aquí van tus métodos _onMouseHover y _onRoleTap igual que los tenías) ...
   void _onMouseHover(PointerEvent details) {
     setState(() {
       mouseTrail.add(MouseParticle(details.localPosition.dx, details.localPosition.dy, activeColor));
@@ -61,7 +67,6 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
       _passController.clear();
       roleParticles = List.generate(50, (index) => Particle(color));
     });
-
     Future.delayed(const Duration(milliseconds: 1200), () {
       if (mounted) setState(() => isSplashing = false);
     });
@@ -144,7 +149,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
                   children: [
                     const SizedBox(height: 50),
                     const Icon(Icons.engineering_rounded, size: 70, color: Color(0xFF818CF8)),
-                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6)),
+                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Colors.white)),
                     const SizedBox(height: 70),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -170,6 +175,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     );
   }
 
+  // ... (Aquí siguen tus widgets _buildRoleButton, _buildGlassForm, _buildField y _buildSplashOverlay igual) ...
   Widget _buildRoleButton(String role, IconData icon, Color color) {
     bool isSelected = selectedRole == role;
     return GestureDetector(
@@ -283,8 +289,4 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   }
 }
 
-// --- DASHBOARDS TEMPORALES ---
-class VendedorDashboard extends StatelessWidget { const VendedorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
-class ConsultorDashboard extends StatelessWidget { const ConsultorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }
-
-
+// --- HE BORRADO LOS DASHBOARDS TEMPORALES QUE ESTABAN AQUÍ ---
