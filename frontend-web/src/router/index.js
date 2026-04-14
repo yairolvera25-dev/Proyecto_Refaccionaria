@@ -11,18 +11,20 @@ const routes = [
     {
         path: '/admin',
         name: 'Admin',
-        // Subimos un nivel y entramos a dashboard/
-        component: () => import('../dashboard/Administrador/AdminDashboard.vue')
+        // 👇 Fíjate bien: 'administrador' todo en minúsculas
+        component: () => import('../features/administrador/AdminDashboard.vue')
     },
     {
         path: '/vendedor',
         name: 'Vendedor',
-        component: () => import('../dashboard/Vendedor/VendedorDashboard.vue')
+        // 👇 'vendedor' todo en minúsculas
+        component: () => import('../features/vendedor/VendedorDashboard.vue')
     },
     {
         path: '/consultor',
         name: 'Consultor',
-        component: () => import('../dashboard/Consultor/ConsultorDashboard.vue')
+        // 👇 'consultor' todo en minúsculas
+        component: () => import('../features/consultor/ConsultorDashboard.vue')
     }
 ];
 
