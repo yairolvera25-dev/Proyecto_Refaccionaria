@@ -55,8 +55,10 @@
           </thead>
           <tbody class="divide-y divide-[#ffffff]/5 relative">
             
-            <tr v-if="cargando" class="absolute inset-0 flex justify-center items-center bg-[#0c1215]/80 backdrop-blur-sm z-20 h-32">
-              <span class="text-[#00ff88] font-mono text-xs animate-pulse">// CARGANDO DATOS...</span>
+            <tr v-if="cargando" class="absolute inset-0 flex justify-center items-center bg-[#0c1215]/80 backdrop-blur-sm z-20 h-32 w-full">
+              <td colspan="5" class="flex justify-center items-center w-full h-full">
+                <span class="text-[#00ff88] font-mono text-xs animate-pulse">// CARGANDO DATOS...</span>
+              </td>
             </tr>
 
             <tr v-for="prod in productosFiltrados" :key="prod.id" class="hover:bg-[#00ff88]/[0.03] transition-colors group">
@@ -115,8 +117,16 @@
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-[10px] text-[#819da7] font-bold uppercase tracking-widest mb-2">SKU</label>
-              <input v-model="form.sku" type="text" required class="w-full bg-[#05080a] border border-[#ffffff]/10 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-[#00ff88]/50 font-mono" placeholder="REF-XXXX">
+              <label class="block text-[10px] text-[#819da7] font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
+                <span>🔒</span> SKU (Generado)
+              </label>
+              <input 
+                v-model="form.sku" 
+                type="text" 
+                readonly 
+                class="w-full bg-[#05080a] border border-[#ffffff]/5 text-[#819da7] text-sm rounded-xl px-4 py-3 focus:outline-none font-mono cursor-not-allowed opacity-60 shadow-inner" 
+                placeholder="REF-XXXX"
+              >
             </div>
             <div>
               <label class="block text-[10px] text-[#819da7] font-bold uppercase tracking-widest mb-2">Stock / Disp.</label>
@@ -235,9 +245,25 @@ const fetchProductos = async () => {
   }
 };
 
+const generarSKU = () => {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let codigo = 'REF-';
+  // Genera 5 caracteres al azar
+  for (let i = 0; i < 5; i++) {
+    codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+  return codigo;
+};
+
 const abrirModalCrear = () => {
   isEditing.value = false;
-  form.value = { id: null, nombre: '', sku: '', stock: 0, precio_venta: 0 };
+  form.value = { 
+    id: null, 
+    nombre: '', 
+    sku: generarSKU(), // 🚀 ¡Aquí inyectamos la magia!
+    stock: 0, 
+    precio_venta: 0 
+  };
   isModalFormOpen.value = true;
 };
 
@@ -270,8 +296,20 @@ const guardarProducto = async () => {
     const payload = {
       nombre: form.value.nombre,
       sku: form.value.sku,
-      precio_venta: form.value.precio_venta,
-      stock: form.value.stock
+      
+      // 💸 Mandamos los precios exactamente como los pide el validador
+      precio_venta: form.value.precio_venta, 
+      precio_compra: form.value.precio_venta * 0.7, 
+      
+      // 📦 Mandamos el inventario en sus dos posibles nombres para que no llore
+      stock: form.value.stock,
+      cantidad: form.value.stock, 
+      
+      // 🏷️ Los datos obligatorios de relleno
+      marca: 'Genérico', 
+      stock_minimo: 5,
+      id_categoria: 1, 
+      descripcion: 'Sin descripción'
     };
 
     if (isEditing.value) {
@@ -281,10 +319,12 @@ const guardarProducto = async () => {
     }
     
     cerrarModales();
-    fetchProductos(); 
+    fetchProductos(); // Recargamos la tabla para ver el nuevo producto
   } catch (error) {
     console.error("Error guardando producto:", error);
-    alert("Hubo un error al guardar. Verifica la consola.");
+    // Si vuelve a fallar, te mostrará el error exacto en una alerta
+    const errorMsg = error.response?.data?.message || "Revisa la consola del navegador.";
+    alert("Hubo un error al guardar: " + errorMsg);
   } finally {
     guardando.value = false;
   }
