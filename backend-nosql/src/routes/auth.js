@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 
-// --- RUTA PARA REGISTRAR (Guardar usuarios nuevos) ---
+router.get('/', authController.getUsers);
 router.post('/register', authController.register);
-
-// --- RUTA PARA EL LOGIN (Ajustada para la App de Flutter de tu compañero) ---
 router.post('/login', authController.login);
+router.put('/:id', authController.updateUser);
+router.delete('/:id', authController.deleteUser);
 
-module.exports = router; 
+module.exports = router;
