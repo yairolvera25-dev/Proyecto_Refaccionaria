@@ -29,8 +29,8 @@ const registrarVenta = async (req, res) => {
         }));
 
         try {
-            await fetch('http://localhost:8000/api/productos/descontar-stock', {
-                method: 'POST',
+            await fetch('http://localhost:8000/api/productos/descontar', {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: itemsVendidos })
             });
@@ -66,5 +66,75 @@ const obtenerVentasPorVendedor = async (req, res) => {
         res.status(500).json({ msg: "Error al obtener las ventas", error: error.message });
     }
 };
+const mongoose = require('mongoose');
 
-module.exports = { registrarVenta, obtenerVentasPorVendedor };
+const obtenerStatsVentas = async (req, res) => {
+    try {
+        const id_vendedor = req.params.idVendedor;
+        
+        // 1. Calculamos la fecha de hace 6 días (para tener 7 contando hoy)
+        const hoy = new Date();
+        // Ajuste horario para México/Latam -06:00 aprox, evitar que sea el día de mañana en UTC
+        hoy.setHours(hoy.getHours() - 6);
+        hoy.setUTCHours(0,0,0,0);
+        
+        const hace7Dias = new Date(hoy);
+        hace7Dias.setDate(hace7Dias.getDate() - 6);
+
+        // 2. Ejecutar la agregación en MongoDB
+        const statsBase = await Venta.aggregate([
+            {
+                $match: {
+                    id_vendedor: new mongoose.Types.ObjectId(id_vendedor),
+                    fecha_hora: { $gte: hace7Dias }
+                }
+            },
+            {
+                $project: {
+                    fecha: { $dateToString: { format: "%Y-%m-%d", date: "$fecha_hora", timezone: "-06:00" } },
+                    total_venta: 1
+                }
+            },
+            {
+                $group: {
+                    _id: "$fecha",
+                    total: { $sum: "$total_venta" }
+                }
+            },
+            {
+                $project: { _id: 0, fecha: "$_id", total: 1 }
+            },
+            {
+                $sort: { fecha: 1 } // IMPORTANTE: ASCENDENTE
+            }
+        ]);
+
+        // 3. Crear diccionarios para rellenar huecos vacíos
+        const mapaStats = {};
+        statsBase.forEach(item => {
+            mapaStats[item.fecha] = item.total;
+        });
+
+        // 4. Generar el arreglo FINAL
+        const resultadoFinal = [];
+        for (let i = 6; i >= 0; i--) {
+            const tempDate = new Date();
+            tempDate.setHours(tempDate.getHours() - 6); // Aseguramos timezone local
+            tempDate.setDate(tempDate.getDate() - i);
+            const diaStr = tempDate.toISOString().split('T')[0]; 
+            
+            resultadoFinal.push({
+                fecha: diaStr,
+                total: mapaStats[diaStr] || 0
+            });
+        }
+
+        res.json({ exito: true, stats: resultadoFinal });
+
+    } catch (error) {
+        console.error("Error en obtenerStatsVentas:", error);
+        res.status(500).json({ msg: "Error al obtener las estadísticas", error: error.message });
+    }
+};
+
+module.exports = { registrarVenta, obtenerVentasPorVendedor, obtenerStatsVentas };

@@ -73,19 +73,39 @@ class ProductoController extends Controller
     {
         $items = $request->input('items');
 
-        if (!$items) {
-            return response()->json(['error' => 'No se enviaron items'], 400);
+        if (!$items || !is_array($items)) {
+            return response()->json(['error' => 'No se enviaron items válidos'], 400);
         }
 
-        foreach ($items as $item) {
-            $producto = Producto::find($item['id']);
-            if ($producto) {
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            foreach ($items as $item) {
+                // Bloqueamos la fila (Pessimistic Locking) mientras hacemos el update
+                // para evitar colisiones si dos vendedores venden el mismo producto 
+                // al mismo milisegundo.
+                $producto = Producto::lockForUpdate()->find($item['id']);
+                
+                if (!$producto) {
+                    throw new \Exception("Producto con ID {$item['id']} no encontrado.");
+                }
+                
+                // NOTA: Si en el futuro cambias a inventario_sucursal, este es el lugar.
                 $producto->stock_minimo = $producto->stock_minimo - $item['cantidad'];
                 $producto->save();
             }
-        }
 
-        return response()->json(['mensaje' => 'Stock descontado con éxito en MySQL']);
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json(['mensaje' => 'Stock descontado masivamente con éxito en MySQL']);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'error' => 'La transacción falló, todo el lote fue revertido.',
+                'detalle' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // --- MÉTODOS CRUD ORIGINALES ---

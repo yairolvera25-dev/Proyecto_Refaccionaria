@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:refaccionaria_app/data/services/auth_service.dart'; 
 import 'package:refaccionaria_app/ui/widgets/background_effects.dart';
 import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart'; 
+import 'package:refaccionaria_app/ui/screens/dashboard/vendedor/vendedor_main_screen.dart'; 
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -66,34 +67,46 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     });
   }
 
-  // 3. EL MÉTODO LIMPIO
+  // 3. EL MÉTODO REAL CONECTADO AL SERVICIO
   Future<void> _intentarLogin() async {
-  if (selectedRole == null) {
-    _mostrarError("Selecciona un rol");
-    return;
-  }
-
-  String role = selectedRole!.toLowerCase();
-
-  if (role == "administrador") {
-    _navegarDashboard("administrador");
-  } else if (role == "vendedor") {
-    _navegarDashboard("vendedor");
-  } else {
-    _navegarDashboard("consultor");
-  }
-}
-
-  void _navegarDashboard(String role) {
-    Widget page;
-    if (role == 'administrador') {
-      page = const AdminDashboard();
-    } else if (role == 'vendedor') {
-      page = const VendedorDashboard();
-    } else {
-      page = const ConsultorDashboard();
+    if (selectedRole == null) {
+      _mostrarError("Selecciona un rol");
+      return;
     }
-    Navigator.push(context, MaterialPageRoute(builder: (context) => page));
+
+    if (_userController.text.isEmpty || _passController.text.isEmpty) {
+      _mostrarError("Ingresa usuario y contraseña");
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await _authService.login(_userController.text, _passController.text);
+      
+      if (response['exito'] == true && response['user'] != null) {
+        final userData = response['user'];
+        final String role = (userData['rol'] ?? '').toString().toLowerCase();
+        final String userId = userData['id'].toString();
+
+        if (role == "vendedor") {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => VendedorMainScreen(userId: userId)),
+          );
+        } else if (role == "administrador") {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AdminDashboard()));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ConsultorDashboard()));
+        }
+      } else {
+        _mostrarError("Respuesta de servidor inválida");
+      }
+    } catch (e) {
+      _mostrarError(e.toString().replaceAll('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _mostrarError(String mensaje) {
