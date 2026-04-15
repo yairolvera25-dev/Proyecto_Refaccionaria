@@ -1,22 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 
-// 1. IMPORTACIONES CORREGIDAS
-// Asegúrate de que estas rutas coincidan con tus archivos reales
+// IMPORTACIONES ABSOLUTAS (Asegúrate de que estas rutas sean las correctas en tu proyecto)
 import 'package:refaccionaria_app/data/services/auth_service.dart'; 
 import 'package:refaccionaria_app/ui/widgets/background_effects.dart';
 import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart'; 
 import 'package:refaccionaria_app/ui/screens/dashboard/vendedor/vendedor_main_screen.dart'; 
-
-// IMPORTANTE: Aquí importamos tus pantallas profesionales
 import 'package:refaccionaria_app/ui/screens/login/dashboard/consultor_dashboard.dart';
-// Si tienes las de Admin y Vendedor, impórtalas igual:
-// import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart';
-// import 'package:refaccionaria_app/ui/screens/login/dashboard/vendedor_dashboard.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
+
   @override
   State<RoleSelectionPage> createState() => _RoleSelectionPageState();
 }
@@ -50,7 +44,6 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     super.dispose();
   }
 
-  // ... (Aquí van tus métodos _onMouseHover y _onRoleTap igual que los tenías) ...
   void _onMouseHover(PointerEvent details) {
     setState(() {
       mouseTrail.add(MouseParticle(details.localPosition.dx, details.localPosition.dy, activeColor));
@@ -72,7 +65,6 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     });
   }
 
-  // 3. EL MÉTODO REAL CONECTADO AL SERVICIO
   Future<void> _intentarLogin() async {
     if (selectedRole == null) {
       _mostrarError("Selecciona un rol");
@@ -100,9 +92,15 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
             MaterialPageRoute(builder: (context) => VendedorMainScreen(userId: userId)),
           );
         } else if (role == "administrador") {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AdminDashboard()));
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const AdminDashboard())
+          );
         } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ConsultorDashboard()));
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const ConsultorDashboard())
+          );
         }
       } else {
         _mostrarError("Respuesta de servidor inválida");
@@ -175,7 +173,6 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     );
   }
 
-  // ... (Aquí siguen tus widgets _buildRoleButton, _buildGlassForm, _buildField y _buildSplashOverlay igual) ...
   Widget _buildRoleButton(String role, IconData icon, Color color) {
     bool isSelected = selectedRole == role;
     return GestureDetector(
@@ -288,5 +285,3 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     );
   }
 }
-
-// --- HE BORRADO LOS DASHBOARDS TEMPORALES QUE ESTABAN AQUÍ ---

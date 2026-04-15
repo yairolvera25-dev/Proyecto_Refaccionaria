@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'ui/screens/login/login_screen.dart';
+import 'ui/screens/login/login_screen.dart'; // Apuntando a tu archivo con meteoros
 import 'ui/screens/dashboard/vendedor/vendedor_main_screen.dart';
 import 'ui/screens/login/dashboard/admin_dashboard.dart';
 import 'ui/screens/login/dashboard/consultor_dashboard.dart';
@@ -16,7 +16,8 @@ Future<void> main() async {
   final String? rol = prefs.getString('rol');
   final String? userId = prefs.getString('userId');
 
-  Widget initialScreen = const RoleSelectionPage();
+  // ✨ CAMBIO CLAVE: Usamos RoleSelectionPage (el nombre real de tu clase)
+  Widget initialScreen = const RoleSelectionPage(); 
 
   if (token != null && rol != null && userId != null) {
     if (rol == 'vendedor') {
@@ -47,6 +48,7 @@ class RefaccionariaApp extends StatelessWidget {
       ),
       home: initialScreen,
       routes: {
+        // ✨ CAMBIO CLAVE: Actualizamos la ruta al nombre correcto
         '/login': (_) => const RoleSelectionPage(),
         '/admin': (_) => const AdminDashboard(),
         '/consultor': (_) => const ConsultorDashboard(),
