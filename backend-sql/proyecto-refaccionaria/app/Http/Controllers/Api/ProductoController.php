@@ -10,13 +10,15 @@ class ProductoController extends Controller
 {
     // --- MÉTODOS PARA EL DASHBOARD (VUE) ---
 
+    // 1. Corregimos el index para que "stock_minimo" aparezca como "stock"
     public function index()
     {
-        // Regresa todo sin mapear para que Vue reciba 'marca', 'precio_venta', etc.
-        $productos = Producto::all();
+        // Usamos select para renombrar la columna y que el Frontend no se rompa
+        $productos = Producto::select('*', 'stock_minimo as stock')->get();
         return response()->json($productos, 200);
     }
 
+    // 2. Corregimos la búsqueda (tenías stock_minimo mapeado, pero faltaba en el index)
     public function buscar(Request $request)
     {
         $q = $request->query('q');
@@ -34,7 +36,7 @@ class ProductoController extends Controller
                 'nombre' => $p->nombre . " (" . $p->marca . ")",
                 'sku' => $p->sku,
                 'precio' => (float) $p->precio_venta,
-                'stock' => $p->stock_minimo
+                'stock' => (int) $p->stock_minimo // Aseguramos que sea entero
             ];
         });
 

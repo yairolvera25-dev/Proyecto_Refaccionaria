@@ -181,17 +181,30 @@ const buscarProductosSQL = async () => {
 };
 
 // 💡 CORRECCIÓN: Filtro robusto que soporta strings y objetos anidados
+// 1. Crea este mapa de IDs (Verifica estos números en tu tabla 'categorias')
+const mapCategorias = {
+  'MOTOR': 1,
+  'FRENOS': 2,
+  'SUSPENSIÓN': 3,
+  'ELÉCTRICO': 4,
+  'FILTROS': 5,
+  'ACCESORIOS': 6
+};
+
 const productosFiltrados = computed(() => {
   let lista = searchResults.value;
+
+  // Si el filtro no es 'Todos', buscamos por ID
   if (categoriaActiva.value !== 'Todos') {
+    // Convertimos el nombre del botón (ej. 'MOTOR') al ID (ej. 1)
+    const idBuscado = mapCategorias[categoriaActiva.value.toUpperCase()];
+
     lista = lista.filter(p => {
-      const nombreCategoria = typeof p.categoria === 'object' ? p.categoria?.nombre : p.categoria;
-      const categoriaLimpia = (nombreCategoria || '').trim().toLowerCase();
-      const filtroLimpio = categoriaActiva.value.trim().toLowerCase();
-      
-      return categoriaLimpia === filtroLimpio;
+      // Comparamos el id_categoria del producto con el ID del botón
+      return p.id_categoria == idBuscado;
     });
   }
+
   return lista;
 });
 
