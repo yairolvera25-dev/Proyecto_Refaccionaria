@@ -12,17 +12,9 @@ class ProductoController extends Controller
 
     public function index()
     {
+        // Regresa todo sin mapear para que Vue reciba 'marca', 'precio_venta', etc.
         $productos = Producto::all();
-        $resultado = $productos->map(function ($p) {
-            return [
-                'id' => $p->id,
-                'nombre' => $p->nombre,
-                'sku' => $p->sku,
-                'precio' => (float) $p->precio_venta,
-                'stock' => $p->stock_minimo 
-            ];
-        });
-        return response()->json($resultado, 200);
+        return response()->json($productos, 200);
     }
 
     public function buscar(Request $request)
