@@ -1,15 +1,16 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'dart:convert';
 
-// 1. IMPORTACIONES ABSOLUTAS (A prueba de errores de carpetas)
+// IMPORTACIONES ABSOLUTAS (Asegúrate de que estas rutas sean las correctas en tu proyecto)
 import 'package:refaccionaria_app/data/services/auth_service.dart'; 
 import 'package:refaccionaria_app/ui/widgets/background_effects.dart';
 import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart'; 
 import 'package:refaccionaria_app/ui/screens/dashboard/vendedor/vendedor_main_screen.dart'; 
+import 'package:refaccionaria_app/ui/screens/login/dashboard/consultor_dashboard.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
+
   @override
   State<RoleSelectionPage> createState() => _RoleSelectionPageState();
 }
@@ -22,13 +23,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
   final TextEditingController _passController = TextEditingController();
   bool _isLoading = false;
 
-  // 2. INSTANCIAMOS EL SERVICIO
   final AuthService _authService = AuthService();
-
   late AnimationController _mainController;
-  List<Particle> roleParticles = [];
   List<Meteor> meteors = [];
   List<MouseParticle> mouseTrail = [];
+  List<Particle> roleParticles = [];
 
   @override
   void initState() {
@@ -61,13 +60,11 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
       _passController.clear();
       roleParticles = List.generate(50, (index) => Particle(color));
     });
-
     Future.delayed(const Duration(milliseconds: 1200), () {
       if (mounted) setState(() => isSplashing = false);
     });
   }
 
-  // 3. EL MÉTODO REAL CONECTADO AL SERVICIO
   Future<void> _intentarLogin() async {
     if (selectedRole == null) {
       _mostrarError("Selecciona un rol");
@@ -95,9 +92,15 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
             MaterialPageRoute(builder: (context) => VendedorMainScreen(userId: userId)),
           );
         } else if (role == "administrador") {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const AdminDashboard()));
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const AdminDashboard())
+          );
         } else {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const ConsultorDashboard()));
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const ConsultorDashboard())
+          );
         }
       } else {
         _mostrarError("Respuesta de servidor inválida");
@@ -144,7 +147,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
                   children: [
                     const SizedBox(height: 50),
                     const Icon(Icons.engineering_rounded, size: 70, color: Color(0xFF818CF8)),
-                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6)),
+                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Colors.white)),
                     const SizedBox(height: 70),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -282,9 +285,3 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     );
   }
 }
-
-// --- DASHBOARDS TEMPORALES ---
-class VendedorDashboard extends StatelessWidget { const VendedorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("VENTAS")), body: const Center(child: Text("Bienvenido Vendedor"))); }
-class ConsultorDashboard extends StatelessWidget { const ConsultorDashboard({super.key}); @override Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text("CONSULTOR")), body: const Center(child: Text("Bienvenido Consultor"))); }
-
-

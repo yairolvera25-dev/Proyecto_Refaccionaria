@@ -1,20 +1,31 @@
 const Venta = require('../models/Venta');
 
+// 1. Obtener TODAS las ventas (La que usa tu Dashboard de Consultor)
+const obtenerTodasLasVentas = async (req, res) => {
+    try {
+        // Buscamos todas las ventas y las ordenamos de la más reciente a la más vieja
+        const ventas = await Venta.find().sort({ createdAt: -1 });
+
+        // Enviamos directamente el arreglo para que el FutureBuilder de Flutter lo lea bien
+        res.json(ventas);
+    } catch (error) {
+        console.error("Error al obtener todas las ventas:", error);
+        res.status(500).json({ msg: "Error al obtener las ventas", error: error.message });
+    }
+};
+
+// 2. Registrar venta (La que ya tenías, está bien mapeada)
 const registrarVenta = async (req, res) => {
     try {
-        // 💡 MAPEO EXACTO PARA MONGOOSE
-        // Cambiamos los nombres para que coincidan con tu Schema de Venta.js
         const productosParaMongo = req.body.items.map(item => ({
-            id_producto: item.id || item.id_producto,          // Requerido por Mongoose
-            sku: item.sku || 'SIN-SKU',                        // Requerido por Mongoose
-            nombre_pieza: item.nombre || item.nombre_pieza,    // Requerido por Mongoose
+            id_producto: item.id || item.id_producto,
+            sku: item.sku || 'SIN-SKU',
+            nombre_pieza: item.nombre || item.nombre_pieza,
             cantidad: item.cantidad || 1,
-            precio_unitario: item.precio || 0,                 // Requerido por Mongoose
-            // Opcional, pero bueno tenerlo:
+            precio_unitario: item.precio || 0,
             subtotal: (item.cantidad || 1) * (item.precio || 0)
         }));
 
-        // 1. Guardamos la venta en MongoDB Atlas
         const nuevaVenta = new Venta({
             ...req.body,
             productos_vendidos: productosParaMongo
@@ -22,7 +33,7 @@ const registrarVenta = async (req, res) => {
 
         await nuevaVenta.save();
 
-        // 2. Avisarle a Laravel (MySQL) que descuente el stock
+        // Notificación opcional a Laravel
         const itemsVendidos = req.body.items.map(item => ({
             id: item.id,
             cantidad: item.cantidad
@@ -34,12 +45,11 @@ const registrarVenta = async (req, res) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: itemsVendidos })
             });
-            console.log("✅ Laravel fue notificado para descontar stock.");
+            console.log("✅ Laravel fue notificado.");
         } catch (errorLaravel) {
-            console.error("⚠️ La venta se guardó en Mongo, pero Laravel no respondió:", errorLaravel.message);
+            console.error("⚠️ Laravel no respondió.");
         }
 
-        // 3. Respondemos al Frontend
         res.status(201).json({
             exito: true,
             mensaje: "✅ Venta registrada correctamente",
@@ -47,19 +57,14 @@ const registrarVenta = async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error en registrarVenta:", error);
         res.status(500).json({ msg: "❌ Error al procesar venta", error: error.message });
     }
 };
 
-// ... tu otra función obtenerVentasPorVendedor se queda igual ...
-
+// 3. Obtener ventas por vendedor específico
 const obtenerVentasPorVendedor = async (req, res) => {
     try {
-        // 🛡️ BLINDAJE: Dependiendo de cómo definiste la ruta en routes/venta.js
-        // puede llegar como req.params.id_vendedor o req.params.id
         const id_vendedor = req.params.id_vendedor || req.params.id;
-
         const ventas = await Venta.find({ id_vendedor }).sort({ createdAt: -1 });
         res.json({ exito: true, ventas });
     } catch (error) {
@@ -137,4 +142,9 @@ const obtenerStatsVentas = async (req, res) => {
     }
 };
 
-module.exports = { registrarVenta, obtenerVentasPorVendedor, obtenerStatsVentas };
+module.exports = {
+    registrarVenta,
+    obtenerVentasPorVendedor,
+    obtenerStatsVentas,
+    obtenerTodasLasVentas
+};
