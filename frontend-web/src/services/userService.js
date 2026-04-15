@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.VITE_API_URL_NOSQL}/auth/`;
-// O si el endpoint de usuarios es general:
-// const API_URL = `${import.meta.env.VITE_API_URL_NOSQL}/users/`;
+// ✅ AHORA
+const API_URL = `${import.meta.env.VITE_API_URL_NOSQL}/auth`; // Quitamos la / del final
+// ...
+return axios.post(`${API_URL}/login`, { email, password }); // La / se queda solo aquí
 
 export const userService = {
     getAll: async () => {

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class StatsProvider extends ChangeNotifier {
   // URLs para desarrollo local hacia Node.js
   // En stats_provider.dart
-static final String _baseUrlNoSql = dotenv.env['API_URL_NOSQL'] ?? 'http://10.0.2.2:4000/api';
+// DEBE ESTAR ASÍ:
+static final String _baseUrlNoSql = dotenv.env['VITE_API_URL_NOSQL'] ?? 'http://127.0.0.1:4000/api';
 
   final Dio _dio = Dio(BaseOptions(
     baseUrl: _baseUrlNoSql,

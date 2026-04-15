@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PosService {
   // Conectamos a Node.js (MongoDB) para registrar la nueva transacción de venta

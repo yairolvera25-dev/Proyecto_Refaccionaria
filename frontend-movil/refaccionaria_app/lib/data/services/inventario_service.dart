@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../models/producto_model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class InventarioService {
   final Dio _dio = Dio(

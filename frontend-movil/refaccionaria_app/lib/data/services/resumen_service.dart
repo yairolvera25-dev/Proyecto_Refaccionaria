@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../models/producto_model.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ResumenService {
   // URLs para desarrollo local (127.0.0.1 si corres en Chrome/Web o iOS simulator)
