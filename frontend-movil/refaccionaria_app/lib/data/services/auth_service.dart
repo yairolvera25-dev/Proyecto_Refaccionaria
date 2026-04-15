@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  final String _baseUrl = dotenv.env['VITE_API_URL_NOSQL'] ?? 'http://localhost:4000/api';
+  final String _baseUrl = dotenv.env['VITE_API_URL_NOSQL']!;
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final url = Uri.parse('$_baseUrl/auth/login');
@@ -22,38 +22,35 @@ class AuthService {
         }),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
 
-        // --- PERSISTENCIA DE SESIÓN ---
-        if (data['exito'] == true && data['user'] != null) {
-          final prefs = await SharedPreferences.getInstance();
-          final user = data['user'];
-          
-          final String userId = user['id']?.toString() ?? '';
-          final String rol = user['rol']?.toString().toLowerCase() ?? '';
-          // Manejo seguro por si Node.js implementa JWT en el futuro
-          final String token = data['token']?.toString() ?? 'session_$userId';
-          
-          await prefs.setString('token', token);
-          await prefs.setString('userId', userId);
-          await prefs.setString('rol', rol);
+      if (response.statusCode == 200) {
+        final prefs = await SharedPreferences.getInstance();
+
+        if (data['token'] != null) {
+          await prefs.setString('token', data['token']);
         }
 
-        return data;
+        return {
+          'ok': true,
+          'data': data,
+        };
       } else {
-        final error = jsonDecode(response.body);
-        throw error['msg'] ?? 'Error en las credenciales';
+        return {
+          'ok': false,
+          'message': data['message'] ?? 'Error en login',
+        };
       }
     } catch (e) {
-      throw "Error de conexión: Verifica que el servidor esté encendido."; 
+      return {
+        'ok': false,
+        'message': 'Error de conexión: $e',
+      };
     }
   }
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
-    await prefs.remove('userId');
-    await prefs.remove('rol');
   }
 }
