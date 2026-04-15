@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4000/api/auth';
+// Usamos la variable de entorno de Node/NoSQL
+const API_URL = `${import.meta.env.VITE_API_URL_NOSQL}/auth/`;
 
 export const authService = {
     login: async (email, password) => {

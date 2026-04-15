@@ -5,7 +5,8 @@ class InventarioService {
   final Dio _dio = Dio(
     BaseOptions(
       // Recuerda cambiar a tu IP o dominio en producción
-      baseUrl: 'http://127.0.0.1:8000/api',
+      // Dentro de BaseOptions
+baseUrl: dotenv.env['API_URL_SQL'] ?? 'http://10.0.2.2:8000/api',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {

@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4000/api/auth';
+const API_URL = `${import.meta.env.VITE_API_URL_NOSQL}/auth/`;
+// O si el endpoint de usuarios es general:
+// const API_URL = `${import.meta.env.VITE_API_URL_NOSQL}/users/`;
 
 export const userService = {
     getAll: async () => {

@@ -4,7 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  final String _baseUrl = dotenv.env['VITE_API_URL_NOSQL'] ?? 'http://localhost:4000/api';
+  final String _baseUrl = dotenv.env['API_URL_NOSQL'] ?? 'http://10.0.2.2:4000/api';
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     final url = Uri.parse('$_baseUrl/auth/login');

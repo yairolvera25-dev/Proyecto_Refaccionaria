@@ -40,9 +40,14 @@ const registrarVenta = async (req, res) => {
         }));
 
         try {
-            await fetch('http://localhost:8000/api/productos/descontar', {
+            // Usamos process.env para leer la variable de entorno
+            const urlLaravel = `${process.env.LARAVEL_API_URL}/productos/descontar`;
+
+            await fetch(urlLaravel, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ items: itemsVendidos })
             });
             console.log("✅ Laravel fue notificado.");
@@ -76,13 +81,13 @@ const mongoose = require('mongoose');
 const obtenerStatsVentas = async (req, res) => {
     try {
         const id_vendedor = req.params.idVendedor;
-        
+
         // 1. Calculamos la fecha de hace 6 días (para tener 7 contando hoy)
         const hoy = new Date();
         // Ajuste horario para México/Latam -06:00 aprox, evitar que sea el día de mañana en UTC
         hoy.setHours(hoy.getHours() - 6);
-        hoy.setUTCHours(0,0,0,0);
-        
+        hoy.setUTCHours(0, 0, 0, 0);
+
         const hace7Dias = new Date(hoy);
         hace7Dias.setDate(hace7Dias.getDate() - 6);
 
@@ -126,8 +131,8 @@ const obtenerStatsVentas = async (req, res) => {
             const tempDate = new Date();
             tempDate.setHours(tempDate.getHours() - 6); // Aseguramos timezone local
             tempDate.setDate(tempDate.getDate() - i);
-            const diaStr = tempDate.toISOString().split('T')[0]; 
-            
+            const diaStr = tempDate.toISOString().split('T')[0];
+
             resultadoFinal.push({
                 fecha: diaStr,
                 total: mapaStats[diaStr] || 0

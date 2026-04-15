@@ -4,7 +4,8 @@ import 'package:dio/dio.dart';
 
 class StatsProvider extends ChangeNotifier {
   // URLs para desarrollo local hacia Node.js
-  static const String _baseUrlNoSql = 'http://127.0.0.1:4000/api';
+  // En stats_provider.dart
+static final String _baseUrlNoSql = dotenv.env['API_URL_NOSQL'] ?? 'http://10.0.2.2:4000/api';
 
   final Dio _dio = Dio(BaseOptions(
     baseUrl: _baseUrlNoSql,

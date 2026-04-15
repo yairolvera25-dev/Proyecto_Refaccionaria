@@ -10,7 +10,8 @@ const modoEdicion = ref(false);
 const itemSeleccionado = ref(null);
 const form = ref({});
 
-const API_USER = 'http://localhost:4000/api/auth';
+// Concatenamos la URL base de Node con el endpoint de auth
+const API_USER = `${import.meta.env.VITE_API_URL_NOSQL}/auth`;
 
 const cargarUsuarios = async () => {
   try {

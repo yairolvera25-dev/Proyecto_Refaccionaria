@@ -10,7 +10,8 @@ const modoEdicion = ref(false);
 const itemSeleccionado = ref(null);
 const form = ref({});
 
-const API_PROD = 'http://localhost:8000/api/productos';
+// Concatenamos la URL base de Laravel con el endpoint de productos
+const API_PROD = `${import.meta.env.VITE_API_URL_SQL}/productos`;
 
 const cargarProductos = async () => {
   try {

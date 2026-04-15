@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 class ResumenService {
   // URLs para desarrollo local (127.0.0.1 si corres en Chrome/Web o iOS simulator)
   // Nota: Node.js suele correr en el puerto 3000, cámbialo si usas otro.
-  static const String _baseUrlNoSql = 'http://127.0.0.1:4000/api'; 
-  static const String _baseUrlSql = 'http://127.0.0.1:8000/api';
+  static final String _baseUrlNoSql = dotenv.env['API_URL_NOSQL'] ?? 'http://10.0.2.2:4000/api';
+  static final String _baseUrlSql = dotenv.env['API_URL_SQL'] ?? 'http://10.0.2.2:8000/api';
 
   final Dio _dioNoSql = Dio(BaseOptions(
     baseUrl: _baseUrlNoSql,
