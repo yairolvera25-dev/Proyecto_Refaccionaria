@@ -42,35 +42,20 @@ const tema = computed(() => {
 
 // FUNCIÓN DE LOGIN REAL
 const iniciarSesion = async () => {
-  mensaje.texto = '';
-  router.push('/dashboard/administrador');
+  mensaje.texto = '¡Acceso Concedido (Modo Dev)!';
+  mensaje.tipo = 'success';
   cargando.value = true;
-
-  try {
-    const data = await authService.login(credenciales.email, credenciales.password);
-    
-    if (data.exito) {
-      // Guardamos al usuario de MongoDB
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      mensaje.texto = "¡Acceso concedido!";
-      mensaje.tipo = 'success';
-
-      // Redirección por Rol (el rol viene de la BD NoSQL)
-      const rolDB = data.user.rol.toLowerCase();
-      
-      setTimeout(() => {
-        if (rolDB === 'administrador') router.push('/admin');
-        else if (rolDB === 'vendedor') router.push('/vendedor');
-        else if (rolDB === 'consultor') router.push('/consultor');
-      }, 1000);
-    }
-  } catch (error) {
-    mensaje.texto = error.message || "Error al conectar con el servidor";
-    mensaje.tipo = 'error';
-  } finally {
-    cargando.value = false;
-  }
+  
+  // Guardamos el rol que tú seleccionaste en la pantalla
+  const fakeUser = { name: 'Hector Dev', rol: rolActivo.value };
+  localStorage.setItem('user', JSON.stringify(fakeUser));
+  
+  setTimeout(() => {
+    // Te manda a /admin, /vendedor o /consultor según lo que picaste
+    if (rolActivo.value === 'administrador') router.push('/admin');
+    else if (rolActivo.value === 'vendedor') router.push('/vendedor');
+    else if (rolActivo.value === 'consultor') router.push('/consultor');
+  }, 500);
 };
 </script>
 
@@ -115,10 +100,10 @@ const iniciarSesion = async () => {
 
         <form @submit.prevent="iniciarSesion" class="w-full space-y-6">
           <div class="relative">
-            <input v-model="credenciales.email" type="email" placeholder="Correo Electrónico" required :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 border-gray-800 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', tema.inputFocus]">
+            <input v-model="credenciales.email" type="email" placeholder="Correo Electrónico"  :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 border-gray-800 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', tema.inputFocus]">
           </div>
           <div class="relative">
-            <input v-model="credenciales.password" type="password" placeholder="Contraseña" required :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 border-gray-800 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', tema.inputFocus]">
+            <input v-model="credenciales.password" type="password" placeholder="Contraseña"  :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 border-gray-800 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', tema.inputFocus]">
           </div>
           
           <button type="submit" :disabled="cargando" :class="['w-full text-white font-bold py-5 rounded-lg mt-8 transition-all duration-500 text-sm md:text-base tracking-[0.3em] uppercase shadow-xl hover:-translate-y-1', tema.boton, cargando ? 'opacity-50 cursor-not-allowed' : '']">
@@ -130,3 +115,4 @@ const iniciarSesion = async () => {
     </div>
   </div>
 </template>
+
