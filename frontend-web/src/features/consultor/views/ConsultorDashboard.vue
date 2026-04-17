@@ -69,13 +69,13 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router'; // Para la redirección del botón salir
 
 // IMPORTACIÓN DE COMPONENTES DE INTERFAZ
-import TopStats from '../components/TopStats.vue';
-import TopStockChart from '../components/TopStockChart.vue';
-import InventoryList from '../components/InventoryList.vue';
-import ActionModals from '../components/ActionModals.vue';
+import TopStats from '@/features/consultor/components/TopStats.vue';
+import TopStockChart from '@/features/consultor/components/TopStockChart.vue';
+import InventoryList from '@/features/consultor/components/InventoryList.vue';
+import ActionModals from '@/features/consultor/components/ActionModals.vue';
 
 // LÓGICA DE EXPORTACIÓN A EXCEL Y PDF
-import { generarPDF, generarExcel } from '../../../core/utils/exportData.js';
+import { generarPDF, generarExcel } from '@/core/utils/exportData.js';
 
 // Inicializamos el enrutador
 const router = useRouter();
@@ -89,7 +89,7 @@ const selectedItem = ref(null);
 
 // Lógica para cerrar sesión y volver a la raíz
 const cerrarSesion = () => {
-  console.log("Cerrando sesión...");
+  localStorage.clear();
   router.push('/'); 
 };
 

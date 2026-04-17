@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import axios from 'axios';
-import UserFormModal from '../modals/UserFormModal.vue';
+import UserFormModal from '@/features/admin/modals/UserFormModal.vue';
 
 const busqueda = ref("");
 const usuarios = ref([]);
@@ -63,7 +63,7 @@ onMounted(cargarUsuarios);
     </header>
 
     <div class="table-container shadow-neon">
-      <table class="main-table">
+      <div class="overflow-x-auto w-full"><table class="main-table">
         <thead>
           <tr>
             <th>NOMBRE</th><th>ROL</th><th>EMAIL</th><th>ACCIONES</th>
@@ -80,7 +80,7 @@ onMounted(cargarUsuarios);
             </td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </div>
 
     <UserFormModal 

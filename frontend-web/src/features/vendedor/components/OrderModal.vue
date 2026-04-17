@@ -15,7 +15,7 @@
           <p class="text-[10px] font-bold mt-1 text-black">{{ formatearFechaCompleta(order?.createdAt) }}</p>
         </div>
 
-        <table class="w-full text-[11px] mb-6 border-collapse">
+        <div class="overflow-x-auto w-full"><table class="w-full text-[11px] mb-6 border-collapse">
           <thead>
             <tr class="border-b-2 border-black text-black text-left">
               <th class="pb-1 w-10">Cant</th>
@@ -39,7 +39,7 @@
               </td>
             </tr>
           </tbody>
-        </table>
+        </table></div>
 
         <div class="border-t-2 border-dashed border-black pt-4 text-black">
           <div class="flex justify-between items-center text-sm font-black italic uppercase text-black">

@@ -23,10 +23,10 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 // Importamos los componentes
-import HeaderVendedor from '../components/HeaderVendedor.vue';
-import TabResumen from '../components/TabResumen.vue';
-import TabPOS from '../components/TabPOS.vue';
-import TabInventario from '../components/TabInventario.vue';
+import HeaderVendedor from '@/features/vendedor/components/HeaderVendedor.vue';
+import TabResumen from '@/features/vendedor/components/TabResumen.vue';
+import TabPOS from '@/features/vendedor/components/TabPOS.vue';
+import TabInventario from '@/features/vendedor/components/TabInventario.vue';
 
 const router = useRouter();
 const activeTab = ref('dashboard');

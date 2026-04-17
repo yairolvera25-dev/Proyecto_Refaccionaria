@@ -1,7 +1,7 @@
 import { createApp } from 'vue';
-import App from './App.vue';
+import App from '@/App.vue';
 // 1. IMPORTA EL ROUTER QUE ACABAS DE CREAR
-import router from './router';
+import router from '@/router';
 // Tus estilos...
 import './style.css';
 

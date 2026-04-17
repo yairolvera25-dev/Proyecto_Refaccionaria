@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from "vue";
-import AdminSidebar from '../components/AdminSidebar.vue'
-import PersonalAdmin from './PersonalAdmin.vue';
-import AlmacenAdmin from './AlmacenAdmin.vue';
+import AdminSidebar from '@/features/admin/components/AdminSidebar.vue'
+import PersonalAdmin from '@/features/admin/views/PersonalAdmin.vue';
+import AlmacenAdmin from '@/features/admin/views/AlmacenAdmin.vue';
 
 const seccionActiva = ref("dashboard");
 </script>
@@ -72,10 +72,18 @@ const seccionActiva = ref("dashboard");
 
 .identity-grid {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 20px;
   margin-bottom: 40px;
 }
+@media (min-width: 768px) {
+  .identity-grid {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
 
 .badge-card {
   background: rgba(0, 210, 255, 0.05);
@@ -146,9 +154,17 @@ const seccionActiva = ref("dashboard");
 }
 .app-shell { 
   display: flex; 
+  flex-direction: column;
   height: 100vh; 
   width: 100%;
   box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .app-shell {
+    flex-direction: row;
+  }
+}
+.app-shell {
   background: radial-gradient(circle at top right, #0a192f, #02040a);
   color: #fff; 
   font-family: 'Inter', sans-serif; 

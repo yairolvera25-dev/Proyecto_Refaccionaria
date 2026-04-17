@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Role = require('../models/Role');
+const bcrypt = require('bcryptjs');
 
 exports.getUsers = async (req, res) => {
     try {
@@ -13,14 +14,21 @@ exports.getUsers = async (req, res) => {
 exports.register = async (req, res) => {
     try {
         const { nombre, email, password, nombre_rol } = req.body;
-        const rolDoc = await Role.findOne({ nombre_rol: nombre_rol || 'Vendedor' });
+        
+        // Hasheo de Password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const rolDoc = await Role.findOne({ nombre_rol: nombre_rol || 'Consultor' });
         const nuevoUsuario = new User({
-            nombre, email, password,
+            nombre, 
+            email, 
+            password: hashedPassword,
             id_rol: rolDoc ? rolDoc._id : null,
-            id_sucursal: 1
+            activo: true
         });
         await nuevoUsuario.save();
-        res.json({ msg: "✅ Usuario creado" });
+        res.json({ msg: "✅ Usuario creado", exito: true });
     } catch (error) {
         res.status(500).json({ msg: "Error al crear", error: error.message });
     }
@@ -48,7 +56,12 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
         const user = await User.findOne({ email }).populate('id_rol');
-        if (!user || user.password !== password) return res.status(401).json({ msg: "Error" });
-        res.json({ exito: true, user: { id: user._id, nombre: user.nombre, rol: user.id_rol?.nombre_rol } });
+        if (!user) return res.status(401).json({ msg: "Error" });
+        
+        // Retrocompatibilidad: Si el hash match falla, revisa si es texto plano de una db antigua
+        const isMatch = await bcrypt.compare(password, user.password).catch(() => false);
+        if (!isMatch && user.password !== password) return res.status(401).json({ msg: "Error de contraseña" });
+
+        res.json({ exito: true, user: { id: user._id, nombre: user.nombre, rol: user.id_rol?.nombre_rol, activo: user.activo } });
     } catch (error) { res.status(500).json({ error: error.message }); }
 };
