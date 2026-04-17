@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../../core/providers/vendedor/resumen_provider.dart';
-import '../../../../core/providers/vendedor/stats_provider.dart';
+import 'package:refaccionaria_app/features/vendedor/providers/resumen_provider.dart';
+import 'package:refaccionaria_app/features/vendedor/providers/stats_provider.dart';
 
 class ResumenScreen extends StatelessWidget {
   // Recibiremos el ID del logueo, para probar usaré uno vacío o estático por default

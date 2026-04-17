@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../../data/services/auth_service.dart';
-import '../../login/login_screen.dart'; // Módulo del Login
+import 'package:refaccionaria_app/features/auth/services/auth_service.dart';
+import 'package:refaccionaria_app/features/auth/screens/login_screen.dart'; // Módulo del Login
 
 class PerfilScreen extends StatefulWidget {
   final String userId;

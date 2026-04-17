@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'resumen_screen.dart';
-import 'pos_screen.dart';
-import 'inventario_screen.dart';
-import 'perfil_screen.dart';
+import 'package:refaccionaria_app/features/vendedor/screens/resumen_screen.dart';
+import 'package:refaccionaria_app/features/vendedor/screens/pos_screen.dart';
+import 'package:refaccionaria_app/features/vendedor/screens/inventario_screen.dart';
+import 'package:refaccionaria_app/features/vendedor/screens/perfil_screen.dart';
 
 class VendedorMainScreen extends StatefulWidget {
   final String userId;

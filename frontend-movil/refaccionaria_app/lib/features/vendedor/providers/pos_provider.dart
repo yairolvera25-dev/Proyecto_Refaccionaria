@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../../data/models/producto_model.dart';
-import '../../../../data/services/pos_service.dart';
+// Importa el modelo de producto (suponiendo que está en su nueva carpeta)
+import 'package:refaccionaria_app/features/vendedor/models/producto_model.dart';
+// ¡OJO AQUÍ! Cambiamos resumen_service por pos_service
+import 'package:refaccionaria_app/features/vendedor/services/pos_service.dart'; 
+
+
 
 class PosProvider extends ChangeNotifier {
   final PosService _service = PosService();

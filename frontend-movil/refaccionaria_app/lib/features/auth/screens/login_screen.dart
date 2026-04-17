@@ -1,12 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-// IMPORTACIONES ABSOLUTAS (Asegúrate de que estas rutas sean las correctas en tu proyecto)
-import 'package:refaccionaria_app/data/services/auth_service.dart'; 
-import 'package:refaccionaria_app/ui/widgets/background_effects.dart';
-import 'package:refaccionaria_app/ui/screens/login/dashboard/admin_dashboard.dart'; 
-import 'package:refaccionaria_app/ui/screens/dashboard/vendedor/vendedor_main_screen.dart'; 
-import 'package:refaccionaria_app/ui/screens/login/dashboard/consultor_dashboard.dart';
+// IMPORTACIONES (Asegúrate de que estas rutas sean las correctas en tu proyecto)
+import 'package:refaccionaria_app/features/auth/services/auth_service.dart'; 
+import 'package:refaccionaria_app/core/theme/background_effects.dart';
 
 class RoleSelectionPage extends StatefulWidget {
   const RoleSelectionPage({super.key});
@@ -44,6 +41,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     super.dispose();
   }
 
+  // 🔥 CORRECCIÓN: Se cambió PointerDetails por PointerEvent
   void _onMouseHover(PointerEvent details) {
     setState(() {
       mouseTrail.add(MouseParticle(details.localPosition.dx, details.localPosition.dy, activeColor));
@@ -65,14 +63,15 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
     });
   }
 
+  // 🔥 CORRECCIÓN: VALIDACIÓN DE ROL SEGURA
   Future<void> _intentarLogin() async {
     if (selectedRole == null) {
-      _mostrarError("Selecciona un rol");
+      _notificar("Por favor, selecciona un rol", isError: true);
       return;
     }
 
     if (_userController.text.isEmpty || _passController.text.isEmpty) {
-      _mostrarError("Ingresa usuario y contraseña");
+      _notificar("Ingresa usuario y contraseña", isError: true);
       return;
     }
 
@@ -82,42 +81,41 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
       final response = await _authService.login(_userController.text, _passController.text);
       
       if (response['exito'] == true && response['user'] != null) {
-        final userData = response['user'];
-        final String role = (userData['rol'] ?? '').toString().toLowerCase();
-        final String userId = userData['id'].toString();
+        final String roleDB = (response['user']['rol'] ?? '').toString().toLowerCase();
+        final String roleSeleccionado = selectedRole!.toLowerCase();
 
-        if (role == "vendedor") {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => VendedorMainScreen(userId: userId)),
-          );
-        } else if (role == "administrador") {
-          Navigator.pushReplacement(
-            context, 
-            MaterialPageRoute(builder: (context) => const AdminDashboard())
-          );
-        } else {
-          Navigator.pushReplacement(
-            context, 
-            MaterialPageRoute(builder: (context) => const ConsultorDashboard())
-          );
+        // 🛡️ VALIDACIÓN: ¿El rol del servidor coincide con el botón presionado?
+        if (roleDB != roleSeleccionado) {
+          _notificar("Acceso denegado: Tu cuenta no tiene el rol de $selectedRole", isError: true);
+          setState(() => _isLoading = false);
+          return;
         }
+
+        // 🔥 CORRECCIÓN: ACOMODAR RUTAS (Usando las de main.dart)
+        Navigator.pushReplacementNamed(context, '/$roleDB');
+
       } else {
-        _mostrarError("Respuesta de servidor inválida");
+        _notificar("Credenciales incorrectas o servidor no responde", isError: true);
       }
     } catch (e) {
-      _mostrarError(e.toString().replaceAll('Exception: ', ''));
+      _notificar("Error: ${e.toString().replaceAll('Exception: ', '')}", isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _mostrarError(String mensaje) {
+  void _notificar(String mensaje, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(mensaje), 
+        backgroundColor: isError ? Colors.redAccent : Colors.greenAccent, 
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 
+  // --- ÚNICO MÉTODO BUILD (RESPONSIVO Y CON EFECTOS) ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -126,6 +124,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
         onHover: _onMouseHover,
         child: Stack(
           children: [
+            // EFECTOS DE FONDO
             if (selectedRole == null || isSplashing)
               AnimatedBuilder(
                 animation: _mainController,
@@ -140,30 +139,63 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
               animation: _mainController,
               builder: (context, child) => CustomPaint(painter: MouseTrailPainter(mouseTrail), child: Container()),
             ),
+            
+            // CONTENIDO PRINCIPAL RESPONSIVO
             SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 50),
-                    const Icon(Icons.engineering_rounded, size: 70, color: Color(0xFF818CF8)),
-                    const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Colors.white)),
-                    const SizedBox(height: 70),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildRoleButton("Administrador", Icons.security_rounded, Colors.redAccent),
-                        _buildRoleButton("Vendedor", Icons.point_of_sale_rounded, Colors.greenAccent),
-                        _buildRoleButton("Consultor", Icons.manage_search_rounded, Colors.blueAccent),
-                      ],
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 50),
+                            const Icon(Icons.engineering_rounded, size: 70, color: Color(0xFF818CF8)),
+                            const Text("LOS AMIGOS", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: 6, color: Colors.white)),
+                            const SizedBox(height: 50),
+                            
+                            // Selección de Roles
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildRoleButton("Administrador", Icons.security_rounded, Colors.redAccent),
+                                _buildRoleButton("Vendedor", Icons.point_of_sale_rounded, Colors.greenAccent),
+                                _buildRoleButton("Consultor", Icons.manage_search_rounded, Colors.blueAccent),
+                              ],
+                            ),
+                            
+                            const SizedBox(height: 40),
+                            
+                            // Formulario Glassmorphism
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 400),
+                              child: selectedRole != null && !isSplashing ? _buildGlassForm() : const SizedBox(height: 100),
+                            ),
+                            
+                            const SizedBox(height: 40),
+
+                            // APARTADO DE REGISTRO
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text("¿No tienes cuenta? ", style: TextStyle(color: Colors.white38)),
+                                TextButton(
+                                  onPressed: () => Navigator.pushNamed(context, '/registro'),
+                                  child: Text("Regístrate aquí", style: TextStyle(color: activeColor, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 50),
+                          ],
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 40),
-                    AnimatedSize(
-                      duration: const Duration(milliseconds: 400),
-                      child: selectedRole != null && !isSplashing ? _buildGlassForm() : const SizedBox(height: 100),
-                    ),
-                  ],
-                ),
+                  );
+                }
               ),
             ),
             if (isSplashing) _buildSplashOverlay(),
@@ -172,6 +204,8 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> with TickerProvid
       ),
     );
   }
+
+  // --- WIDGETS DE APOYO (BOTONES Y FORMULARIO) ---
 
   Widget _buildRoleButton(String role, IconData icon, Color color) {
     bool isSelected = selectedRole == role;

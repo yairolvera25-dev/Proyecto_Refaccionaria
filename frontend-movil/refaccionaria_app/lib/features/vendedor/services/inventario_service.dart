@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../models/producto_model.dart';
+import 'package:refaccionaria_app/features/vendedor/models/producto_model.dart';
 
 class InventarioService {
   final Dio _dio = Dio(

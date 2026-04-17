@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:refaccionaria_app/models/venta_model.dart';
+import 'package:refaccionaria_app/features/vendedor/models/venta_model.dart';
 
 class StockService {
   static String get _base =>

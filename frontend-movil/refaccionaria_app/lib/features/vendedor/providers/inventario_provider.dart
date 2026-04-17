@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/producto_model.dart';
-import '../../../data/services/inventario_service.dart';
+import 'package:refaccionaria_app/features/vendedor/models/producto_model.dart';
+import 'package:refaccionaria_app/features/vendedor/services/inventario_service.dart';
 
 class InventarioProvider extends ChangeNotifier {
   final InventarioService _service = InventarioService();

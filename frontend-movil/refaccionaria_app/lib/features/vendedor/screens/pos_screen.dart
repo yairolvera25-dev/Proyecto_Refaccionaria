@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-// Importamos ambos Providers y el Modelo
-import '../../../../core/providers/vendedor/inventario_provider.dart';
-import '../../../../core/providers/vendedor/pos_provider.dart';
-import '../../../../data/models/producto_model.dart';
+// Agrega estas líneas de abajo:
+import 'package:refaccionaria_app/features/vendedor/providers/pos_provider.dart';
+import 'package:refaccionaria_app/features/vendedor/providers/inventario_provider.dart';
 
 class PosScreen extends StatelessWidget {
   final String userId;

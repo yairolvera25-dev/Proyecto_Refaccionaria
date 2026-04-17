@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:refaccionaria_app/ui/widgets/admin/admin_stat_card.dart';
+import 'package:refaccionaria_app/features/admin/widgets/admin_stat_card.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -231,9 +231,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  // --- CATEGORÍAS ESPECIALES: NAVEGACIÓN Y GRID RESPONSIVO ---
+// --- CATEGORÍAS ESPECIALES: NAVEGACIÓN Y GRID RESPONSIVO ---
   void _irACategoria(String cat) {
+    // 1. Filtramos los productos por la categoría seleccionada
     final filtrados = productos.where((p) => p['cat'] == cat).toList();
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -242,22 +244,37 @@ class _AdminDashboardState extends State<AdminDashboard> {
           appBar: AppBar(
             backgroundColor: cardDark, 
             iconTheme: IconThemeData(color: neonBlue),
-            title: Text("Catálogo: $cat", style: TextStyle(color: neonBlue, fontWeight: FontWeight.bold))
+            elevation: 0,
+            title: Text(
+              "Catálogo: $cat", 
+              style: TextStyle(color: neonBlue, fontWeight: FontWeight.bold, letterSpacing: 1.2)
+            ),
           ),
+          // 🔥 USO DE LAYOUTBUILDER PARA RESPONSIVIDAD (Corrección #3)
           body: filtrados.isEmpty 
           ? const Center(child: Text("Sin stock en esta categoría", style: TextStyle(color: Colors.white38)))
-          : LayoutBuilder(builder: (context, constraints) {
-              // Responsividad: Ajuste de columnas según el ancho de la pantalla
-              int cols = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 600 ? 3 : 2);
-              return GridView.builder(
-                padding: const EdgeInsets.all(20),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: cols, childAspectRatio: 0.72, crossAxisSpacing: 15, mainAxisSpacing: 15
-                ),
-                itemCount: filtrados.length,
-                itemBuilder: (context, i) => _buildProductGridCard(filtrados[i]),
-              );
-            }),
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                // Lógica de Columnas Dinámicas (Breakpoints):
+                // Si el ancho es mayor a 900px (Escritorio) -> 4 columnas
+                // Si el ancho es mayor a 600px (Tablet) -> 3 columnas
+                // Si es menor (Celular) -> 2 columnas
+                int cols = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 600 ? 3 : 2);
+
+                return GridView.builder(
+                  padding: const EdgeInsets.all(20),
+                  physics: const BouncingScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: cols,       // Aplicamos la responsividad aquí
+                    childAspectRatio: 0.72,     // Proporción para que la imagen y texto quepan bien
+                    crossAxisSpacing: 18,       // Espaciado horizontal
+                    mainAxisSpacing: 18,        // Espaciado vertical
+                  ),
+                  itemCount: filtrados.length,
+                  itemBuilder: (context, i) => _buildProductGridCard(filtrados[i]),
+                );
+              },
+            ),
         ),
       ),
     );

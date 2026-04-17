@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/providers/vendedor/inventario_provider.dart';
+import 'package:refaccionaria_app/features/vendedor/providers/inventario_provider.dart';
 
 class InventarioScreen extends StatelessWidget {
   const InventarioScreen({Key? key}) : super(key: key);

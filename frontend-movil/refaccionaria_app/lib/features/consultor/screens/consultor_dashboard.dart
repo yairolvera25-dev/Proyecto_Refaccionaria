@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:refaccionaria_app/core/constants.dart';
-import 'package:refaccionaria_app/data/services/stock_service.dart';
-import 'package:refaccionaria_app/models/venta_model.dart';
-import 'package:refaccionaria_app/ui/widgets/stat_card.dart';
-import 'package:refaccionaria_app/data/services/report_service.dart';
+import 'package:refaccionaria_app/features/vendedor/services/stock_service.dart';
+import 'package:refaccionaria_app/features/vendedor/models/venta_model.dart';
+import 'package:refaccionaria_app/shared/widgets/stat_card.dart';
+import 'package:refaccionaria_app/features/vendedor/services/report_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ConsultorDashboard extends StatefulWidget {
