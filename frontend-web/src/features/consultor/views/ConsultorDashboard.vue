@@ -69,13 +69,13 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router'; // Para la redirección del botón salir
 
 // IMPORTACIÓN DE COMPONENTES DE INTERFAZ
-import TopStats from '../../components/ConsultorUI/TopStats.vue';
-import TopStockChart from '../../components/ConsultorUI/TopStockChart.vue';
-import InventoryList from '../../components/ConsultorUI/InventoryList.vue';
-import ActionModals from '../../components/ConsultorUI/ActionModals.vue';
+import TopStats from '../components/TopStats.vue';
+import TopStockChart from '../components/TopStockChart.vue';
+import InventoryList from '../components/InventoryList.vue';
+import ActionModals from '../components/ActionModals.vue';
 
 // LÓGICA DE EXPORTACIÓN A EXCEL Y PDF
-import { generarPDF, generarExcel } from '../../utils/exportData.js';
+import { generarPDF, generarExcel } from '../../../core/utils/exportData.js';
 
 // Inicializamos el enrutador
 const router = useRouter();

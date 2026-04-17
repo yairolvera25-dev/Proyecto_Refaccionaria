@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -14,16 +15,15 @@ return new class extends Migration {
             $table->id();
             $table->string('sku')->unique();
             $table->string('nombre');
-            $table->string('marca');
+            
+            // Llaves foráneas
+            $table->foreignId('id_marca')->constrained('marcas');
+            $table->foreignId('id_categoria')->constrained('categorias');
+            $table->foreignId('id_proveedor')->constrained('proveedores');
+        
             $table->decimal('precio_compra', 10, 2);
             $table->decimal('precio_venta', 10, 2);
-            $table->integer('stock_minimo');
-            $table->string('foto_url')->nullable();
-
-            // Llave foránea
-            $table->unsignedBigInteger('id_categoria');
-            $table->foreign('id_categoria')->references('id')->on('categorias');
-
+            $table->integer('stock')->default(0);
             $table->timestamps();
         });
     }

@@ -17,8 +17,8 @@ class CategoriaFactory extends Factory
     public function definition(): array
     {
         return [
-            'nombre' => $this->faker->unique()->randomElement(['Frenos', 'Suspensión', 'Motor', 'Eléctrico', 'Filtros', 'Líquidos', 'Transmisión', 'Accesorios']),
-            'descripcion' => $this->faker->sentence(),
+            'nombre' => fake()->unique()->randomElement(['Frenos', 'Motor', 'Suspensión', 'Eléctrico', 'Accesorios', 'Carrocería', 'Líquidos', 'Transmisión', 'Filtros', 'Escape']),
+            'descripcion' => fake()->sentence(),
         ];
     }
 }

@@ -22,8 +22,7 @@ const registrarVenta = async (req, res) => {
             sku: item.sku || 'SIN-SKU',
             nombre_pieza: item.nombre || item.nombre_pieza,
             cantidad: item.cantidad || 1,
-            precio_unitario: item.precio || 0,
-            subtotal: (item.cantidad || 1) * (item.precio || 0)
+            precio: item.precio || 0 // Mapeamos el dato a la nueva llave "precio"
         }));
 
         const nuevaVenta = new Venta({

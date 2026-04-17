@@ -2,21 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Producto extends Model
 {
-    use HasFactory;
+    
+    // Esto permite que podamos guardar datos masivamente
+    protected $fillable = ['nombre', 'descripcion', 'precio', 'stock', 'id_marca', 'id_categoria'];
 
-    protected $fillable = [
-        'sku',
-        'nombre',
-        'marca',
-        'precio_compra',
-        'precio_venta',
-        'stock_minimo',
-        'foto_url',
-        'id_categoria'
-    ];
+    public function marca() {
+        return $this->belongsTo(Marca::class, 'id_marca');
+    }
+
+    public function categoria() {
+        return $this->belongsTo(Categoria::class, 'id_categoria');
+    }
 }

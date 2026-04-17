@@ -1,8 +1,8 @@
 ﻿<script setup>
 import { ref, computed, reactive } from 'vue';
-import FondoMeteoritos from '../components/FondoMeteoritos.vue'; 
+import FondoMeteoritos from '../../../shared/components/FondoMeteoritos.vue';
 import { useRouter } from 'vue-router';
-import { authService } from '../services/authService';
+import { authService } from '../../../core/services/authService';
 
 const router = useRouter();
 

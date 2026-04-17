@@ -9,8 +9,8 @@ const UserSchema = new mongoose.Schema({
         ref: 'Role',
         required: true
     },
-    id_sucursal: { type: Number, required: true },
-    activo: { type: Boolean, default: true }
+    // Eliminamos id_sucursal porque ya no existe
+    activo: { type: Boolean, default: false }
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);

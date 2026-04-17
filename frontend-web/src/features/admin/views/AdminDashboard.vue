@@ -1,8 +1,8 @@
 <script setup>
 import { ref } from "vue";
-import AdminSidebar from './components/AdminSidebar.vue';
-import PersonalAdmin from './views/PersonalAdmin.vue';
-import AlmacenAdmin from './views/AlmacenAdmin.vue';
+import AdminSidebar from '../components/AdminSidebar.vue'
+import PersonalAdmin from './PersonalAdmin.vue';
+import AlmacenAdmin from './AlmacenAdmin.vue';
 
 const seccionActiva = ref("dashboard");
 </script>
