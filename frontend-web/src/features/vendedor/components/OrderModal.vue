@@ -7,7 +7,6 @@
       <div id="print-area" class="bg-white text-black p-8 w-full md:w-2/3 font-mono ticket-print-visual">
         <div class="text-center border-b-2 border-dashed border-black pb-4 mb-4">
           <h3 class="text-xl font-black uppercase tracking-tighter text-black">Refaccionaria Los Amigos</h3>
-          <p class="text-[10px] text-black">Sucursal Pachuca, Hidalgo</p>
           <div class="flex justify-between text-[9px] mt-2 px-2 text-black font-bold">
             <span>Vend: {{ order?.id_vendedor?.slice(-5) || 'SISTEMA' }}</span>
             <span>Folio: #{{ order?._id?.slice(-6).toUpperCase() }}</span>
@@ -35,7 +34,7 @@
             </tr>
             <tr v-if="!order?.productos_vendidos?.length">
               <td colspan="3" class="py-10 text-center text-[10px] italic opacity-50 text-black">
-                Sin detalles de productos (Verifica BD)
+                Sin detalles de productos
               </td>
             </tr>
           </tbody>

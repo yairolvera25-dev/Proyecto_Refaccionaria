@@ -57,13 +57,13 @@
               </thead>
               <tbody class="divide-y divide-[#ffffff]/5">
                 <tr 
-                  v-for="order in ordenes.slice(0, 5)" 
+                  v-for="order in (ordenes || []).slice(0, 5)" 
                   :key="order._id" 
                   @click="abrirDetalles(order)"
                   class="hover:bg-[#00ff88]/[0.03] transition-colors group cursor-pointer"
                 >
                   <td class="px-8 py-5 font-mono text-[#00ff88]/80 group-hover:text-[#00ff88] text-xs">
-                    #{{ order._id.slice(-6).toUpperCase() }}
+                    #{{ order._id ? order._id.slice(-6).toUpperCase() : 'N/A' }}
                   </td>
                   <td class="px-8 py-5">
                     <p class="text-xs text-white font-bold">{{ formatearFecha(order.createdAt) }}</p>
@@ -81,17 +81,20 @@
                     {{ formatearDinero(order.total_venta) }}
                   </td>
                 </tr>
+                <tr v-if="!ordenes || ordenes.length === 0">
+                    <td colspan="5" class="px-8 py-10 text-center text-[#819da7] font-mono text-xs">No hay ventas registradas aún.</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <aside class="flex flex-col gap-10">
-        <div class="bg-[#0c1215] rounded-[3rem] border border-[#f97316]/20 p-8 shadow-2xl relative overflow-hidden h-full min-h-[400px]">
+      <aside class="flex flex-col gap-10 h-full">
+        <div class="bg-[#0c1215] rounded-[3rem] border border-[#f97316]/20 p-8 shadow-2xl relative overflow-hidden flex flex-col h-full min-h-[400px] max-h-[650px]">
           <div class="absolute top-0 right-0 w-48 h-48 bg-[#f97316]/10 rounded-bl-full blur-3xl pointer-events-none"></div>
 
-          <div class="flex justify-between items-center mb-8 z-10 relative">
+          <div class="flex justify-between items-center mb-8 z-10 relative shrink-0">
             <h2 class="text-xs font-black uppercase tracking-[0.2em] text-[#f97316] flex items-center gap-2">
               <span class="animate-pulse">⚠️</span> Alerta de Inventario
             </h2>
@@ -100,7 +103,7 @@
             </span>
           </div>
 
-          <div class="space-y-3 overflow-y-auto max-h-[500px] pr-2 z-10 relative custom-scrollbar">
+          <div class="space-y-3 overflow-y-auto flex-1 pr-2 z-10 relative custom-scrollbar">
             
             <div v-if="!productosBajoStock?.length" class="text-center py-10">
               <p class="text-3xl mb-2">✅</p>
@@ -108,7 +111,7 @@
             </div>
 
             <div v-for="prod in productosBajoStock" :key="prod.id || prod.sku" 
-              class="flex justify-between items-center bg-[#05080a] p-4 rounded-2xl border border-[#ffffff]/5 hover:border-[#f97316]/40 transition-all group relative overflow-hidden">
+              class="flex justify-between items-center bg-[#05080a] p-4 rounded-2xl border border-[#ffffff]/5 hover:border-[#f97316]/40 transition-all group relative overflow-hidden shrink-0">
               
               <div class="absolute inset-0 bg-gradient-to-r from-transparent to-[#f97316]/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -133,6 +136,7 @@
           </div>
         </div>
       </aside>
+      
     </section>
 
     <OrderModal 
@@ -144,21 +148,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'; // 💡 Agregamos computed
+import { ref, onMounted, watch, computed } from 'vue'; 
 import apexchart from 'vue3-apexcharts'; 
 import { useDashboard } from '../../../core/composables/useDashboard';
 import OrderModal from './OrderModal.vue';
 
 const props = defineProps(['userId']);
 
+// 💡 CORRECCIÓN PRINCIPAL: Llamamos a useDashboard sin pasarle parámetros
 const { 
-  ordenes, productosBajoStock, rangoActivo, series, kpis, categoriasGrafica, // 💡 Traemos las categorias
+  ordenes, productosBajoStock, rangoActivo, series, kpis, categoriasGrafica, 
   formatearDinero, formatearFecha, formatearHora, 
   cargarDatos, procesarDatosGrafica 
-} = useDashboard(
-  import.meta.env.VITE_API_URL_NOSQL, 
-  import.meta.env.VITE_API_URL_SQL
-);
+} = useDashboard(); 
 
 const isModalOpen = ref(false);
 const selectedOrder = ref(null);
@@ -178,26 +180,35 @@ const cambiarRango = (nuevoRango) => {
   procesarDatosGrafica();
 };
 
-// 💡 Cambiamos ref() por computed() para que se actualice al hacer clic en los botones
 const chartOptions = computed(() => ({
   chart: { type: 'area', toolbar: { show: false }, background: 'transparent' },
   colors: ['#00ff88'],
   stroke: { curve: 'smooth', width: 4 },
   fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0, stops: [0, 90, 100] } },
   xaxis: { 
-    categories: categoriasGrafica.value, // 💡 Inyectamos los días/meses aquí
+    categories: categoriasGrafica.value, 
     labels: { style: { colors: '#819da7', fontFamily: 'monospace', fontWeight: 700 } } 
   },
   yaxis: { 
+    decimalsInFloat: 0, // 💡 MAGIA: Le prohibimos a ApexCharts usar decimales en el eje Y
     labels: { 
       style: { colors: '#819da7', fontFamily: 'monospace' },
-      formatter: (value) => "$" + value.toFixed(0) // 💡 Le ponemos el signo de Dólar/Peso
+      formatter: (value) => {
+        // Nos aseguramos de que sea un número y le quitamos los decimales
+        return "$" + Number(value || 0).toFixed(0); 
+      }
     } 
-  },
+  }, 
   theme: { mode: 'dark' },
   grid: { borderColor: 'rgba(255, 255, 255, 0.05)', strokeDashArray: 4 },
   dataLabels: { enabled: false },
-  tooltip: { theme: 'dark' }
+  tooltip: { 
+    theme: 'dark',
+    y: { 
+      // 💡 Hacemos que al pasar el mouse sí muestre los centavos
+      formatter: (value) => "$" + Number(value || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 }) 
+    }
+  }
 }));
 
 onMounted(() => {

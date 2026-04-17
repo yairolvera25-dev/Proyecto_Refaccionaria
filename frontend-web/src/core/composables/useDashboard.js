@@ -1,12 +1,12 @@
 import { ref, computed } from 'vue';
-import axios from 'axios';
+import { apiService } from '../services/apiService'; // 💡 Usamos tu servicio limpio
 
-export function useDashboard(API_NOSQL, API_SQL) {
+export function useDashboard() { // 💡 Ya no pide parámetros
     const ordenes = ref([]);
     const productosBajoStock = ref([]);
     const rangoActivo = ref('Semana');
     const series = ref([{ name: 'Ventas $', data: [] }]);
-    const categoriasGrafica = ref([]); // 💡 NUEVO: Guardará los días o meses
+    const categoriasGrafica = ref([]);
 
     const formatearDinero = (n) => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(n);
     const formatearFecha = (f) => new Date(f).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
@@ -22,6 +22,7 @@ export function useDashboard(API_NOSQL, API_SQL) {
         ];
     });
 
+    // 🔥 TU MAGIA MATEMÁTICA INTACTA
     const procesarDatosGrafica = () => {
         const ahora = new Date();
         if (rangoActivo.value === 'Semana') {
@@ -37,7 +38,7 @@ export function useDashboard(API_NOSQL, API_SQL) {
             });
 
             series.value = [{ name: 'Ventas Semanales', data: datos }];
-            categoriasGrafica.value = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']; // 💡 Etiquetas Semana
+            categoriasGrafica.value = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
         } else if (rangoActivo.value === 'Mes') {
             const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
@@ -49,7 +50,6 @@ export function useDashboard(API_NOSQL, API_SQL) {
             });
 
             series.value = [{ name: 'Ventas del Mes', data: datos }];
-            // 💡 Etiquetas Mes (1, 2, 3... hasta 30 o 31)
             categoriasGrafica.value = Array.from({ length: ultimoDia }, (_, i) => (i + 1).toString());
 
         } else if (rangoActivo.value === 'Año') {
@@ -61,25 +61,40 @@ export function useDashboard(API_NOSQL, API_SQL) {
             });
 
             series.value = [{ name: 'Ventas del Año', data: datos }];
-            categoriasGrafica.value = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']; // 💡 Etiquetas Año
+            categoriasGrafica.value = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         }
     };
 
+    // 🛡️ EL BLINDAJE ANTI-ERRORES MEJORADO
     const cargarDatos = async (userId) => {
         if (!userId) return;
+
+        // 1. Cargar Ventas (MongoDB)
         try {
-            const [resVentas, resStock] = await Promise.all([
-                axios.get(`${API_NOSQL}/ventas/vendedor/${userId}`),
-                axios.get(`${API_SQL}/productos/bajo-stock`)
-            ]);
-            if (resVentas.data.exito) ordenes.value = resVentas.data.ventas;
-            productosBajoStock.value = resStock.data;
+            const resVentas = await apiService.getVentasVendedor(userId);
+            if (resVentas.data && resVentas.data.exito) {
+                ordenes.value = resVentas.data.ventas;
+            } else if (Array.isArray(resVentas.data)) {
+                ordenes.value = resVentas.data;
+            }
             procesarDatosGrafica();
-        } catch (e) { console.error("Error al cargar datos:", e); }
+        } catch (e) {
+            console.error("Error al cargar ventas de Mongo:", e);
+        }
+
+        // 2. Cargar Alerta de Inventario (Laravel SQL)
+        try {
+            const resStock = await apiService.getProductosStock();
+            // Dependiendo de cómo armaste tu controlador en Laravel, leemos los datos:
+            productosBajoStock.value = resStock.data.data ? resStock.data.data : resStock.data;
+        } catch (e) {
+            console.error("Error al cargar stock de Laravel:", e);
+            productosBajoStock.value = []; // Si Laravel falla, no crashea la pantalla
+        }
     };
 
     return {
-        ordenes, productosBajoStock, rangoActivo, series, kpis, categoriasGrafica, // 💡 Lo exportamos
+        ordenes, productosBajoStock, rangoActivo, series, kpis, categoriasGrafica,
         formatearDinero, formatearFecha, formatearHora,
         cargarDatos, procesarDatosGrafica
     };

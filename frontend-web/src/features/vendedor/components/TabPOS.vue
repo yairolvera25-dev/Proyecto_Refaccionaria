@@ -11,7 +11,6 @@
         
         <input 
           v-model="searchQuery" 
-          @input="buscarProductosSQL" 
           type="text" 
           placeholder="Escribe el nombre o SKU (Ej. Bujía, CAS-5W30)..." 
           class="w-full bg-[#05080a] border border-[#ffffff]/10 p-5 rounded-2xl outline-none focus:border-[#00ff88] focus:shadow-[0_0_15px_rgba(0,255,136,0.2)] text-white text-lg transition-all placeholder-[#819da7]/50 mb-6 font-mono"
@@ -30,7 +29,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto max-h-[550px] pr-2 pb-10">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto max-h-[550px] pr-2 pb-10 custom-scrollbar">
         
         <div v-for="p in productosFiltrados" :key="p.id" class="bg-[#0c1215] border border-[#ffffff]/5 p-5 rounded-2xl hover:border-[#00ff88] hover:shadow-[0_0_15px_rgba(0,255,136,0.15)] transition-all flex flex-col justify-between group">
           
@@ -83,21 +82,35 @@
       
       <h2 class="text-sm font-black uppercase tracking-[0.3em] text-[#819da7] mb-8 border-b border-[#ffffff]/5 pb-4">Ticket de Operación</h2>
       
-      <div class="flex-1 space-y-3 overflow-y-auto pr-2">
-        <div v-for="item in cart" :key="item.id" class="flex justify-between items-center bg-[#05080a] p-4 rounded-2xl border border-[#ffffff]/5 group hover:border-[#00ff88]/30 transition-colors">
-          <div class="flex gap-4 items-center">
+      <div class="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+        
+        <div v-for="item in cart" :key="item.id" class="flex flex-col gap-3 bg-[#05080a] p-4 rounded-2xl border border-[#ffffff]/5 group hover:border-[#00ff88]/30 transition-colors">
+          
+          <div class="flex justify-between items-start gap-2">
+            <p class="text-sm font-bold text-white group-hover:text-[#00ff88] transition-colors leading-tight">{{ item.nombre }}</p>
             <button 
               @click="removeFromCart(item.id)" 
-              class="bg-transparent border border-[#ef4444]/50 text-[#ef4444] hover:bg-[#ef4444] hover:text-white flex items-center justify-center w-8 h-8 rounded-lg hover:scale-110 transition-all font-black shadow-[0_0_5px_rgba(239,68,68,0.1)] hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+              class="text-[#ef4444]/50 hover:text-[#ef4444] transition-colors font-black text-xs px-2 py-1 rounded-md hover:bg-red-500/10"
+              title="Quitar producto"
             >
               ✕
             </button>           
-            <div>
-              <p class="text-sm font-bold text-white group-hover:text-[#00ff88] transition-colors">{{ item.nombre }}</p>
-              <p class="text-xs text-[#00ff88] font-mono mt-1">{{ item.cantidad }}x <span class="text-[#819da7]">${{ item.precio }}</span></p>
-            </div>
           </div>
-          <p class="font-bold font-mono text-[#00ff88] text-lg">${{ (item.cantidad * item.precio).toFixed(2) }}</p>
+
+          <div class="flex justify-between items-end">
+            
+            <div class="flex items-center gap-4 bg-[#0c1215] rounded-xl border border-[#ffffff]/10 px-3 py-1.5 shadow-inner">
+              <button @click="decrementarCantidad(item.id)" class="text-[#819da7] hover:text-white font-black text-lg leading-none transition-transform hover:scale-110">-</button>
+              <span class="text-[#00ff88] font-mono text-sm font-black w-4 text-center">{{ item.cantidad }}</span>
+              <button @click="incrementarCantidad(item)" class="text-[#819da7] hover:text-white font-black text-lg leading-none transition-transform hover:scale-110">+</button>
+            </div>
+
+            <div class="text-right">
+              <p class="text-[10px] text-[#819da7] font-mono mb-0.5">${{ item.precio }} c/u</p>
+              <p class="font-bold font-mono text-[#00ff88] text-lg leading-none">${{ (item.cantidad * item.precio).toFixed(2) }}</p>
+            </div>
+
+          </div>
         </div>
         
         <div v-if="cart.length === 0" class="text-center py-20 opacity-30">
@@ -109,7 +122,7 @@
       <div class="mt-6 pt-6 border-t border-[#ffffff]/10">
         <div class="flex justify-between items-end mb-8 bg-[#05080a] p-4 rounded-2xl border border-[#ffffff]/5">
           <span class="text-xs font-black uppercase tracking-widest text-[#819da7]">Total a transferir</span>
-          <span class="text-5xl font-mono font-black text-[#00ff88] drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">${{ cartTotal.toFixed(2) }}</span>
+          <span class="text-4xl font-mono font-black text-[#00ff88] drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">${{ cartTotal.toFixed(2) }}</span>
         </div>
         
         <button 
@@ -134,26 +147,18 @@ const API_SQL = import.meta.env.VITE_API_URL_SQL;
 
 const searchQuery = ref('');
 const cart = ref([]);
+const searchResults = ref([]); 
 
-// Categorías
 const categorias = ['Todos', 'Motor', 'Frenos', 'Suspensión', 'Eléctrico', 'Filtros', 'Accesorios'];
 const categoriaActiva = ref('Todos');
 
-const mockProducts = [
-  { id: 1, nombre: 'Filtro Aceite Sentra', sku: 'FAS-12', stock: 15, precio: 120, categoria: 'Filtros' }
-  // Mantengo uno de prueba por si la API falla, pero intentaremos cargar los reales.
-];
-
-const searchResults = ref([]);
-
-// 💡 CORRECCIÓN: Cargar datos reales al iniciar la pantalla
 const cargarInventarioInicial = async () => {
   try {
     const res = await axios.get(`${API_SQL}/productos`);
     searchResults.value = res.data.data ? res.data.data : res.data;
   } catch(e) {
     console.error("No se pudo cargar el inventario real:", e);
-    searchResults.value = [...mockProducts];
+    searchResults.value = [];
   }
 };
 
@@ -161,57 +166,29 @@ onMounted(() => {
   cargarInventarioInicial();
 });
 
-const buscarProductosSQL = async () => {
-  const query = searchQuery.value.trim().toLowerCase();
-  if (query === '') {
-    cargarInventarioInicial();
-    return;
-  }
-  try {
-    const res = await axios.get(`${API_SQL}/productos/buscar?q=${query}`);
-    if(res.data && res.data.length > 0) {
-        searchResults.value = res.data; 
-    } else {
-        searchResults.value = [];
-    }
-  } catch (e) {
-    console.error("Error en la búsqueda:", e);
-    searchResults.value = [];
-  }
-};
-
-// 💡 CORRECCIÓN: Filtro robusto que soporta strings y objetos anidados
-// 1. Crea este mapa de IDs (Verifica estos números en tu tabla 'categorias')
-const mapCategorias = {
-  'MOTOR': 1,
-  'FRENOS': 2,
-  'SUSPENSIÓN': 3,
-  'ELÉCTRICO': 4,
-  'FILTROS': 5,
-  'ACCESORIOS': 6
-};
-
 const productosFiltrados = computed(() => {
-  let lista = searchResults.value;
+  return searchResults.value.filter(p => {
+    const term = searchQuery.value.toLowerCase().trim();
+    const nombre = (p.nombre || p.nombre_producto || '').toLowerCase();
+    const sku = (p.sku || '').toLowerCase();
+    const cumpleBusqueda = nombre.includes(term) || sku.includes(term);
 
-  // Si el filtro no es 'Todos', buscamos por ID
-  if (categoriaActiva.value !== 'Todos') {
-    // Convertimos el nombre del botón (ej. 'MOTOR') al ID (ej. 1)
-    const idBuscado = mapCategorias[categoriaActiva.value.toUpperCase()];
+    let cumpleCategoria = true;
+    if (categoriaActiva.value !== 'Todos') {
+       const nombreCat = (typeof p.categoria === 'object' ? p.categoria?.nombre : p.categoria) || '';
+       const catNormalizada = nombreCat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+       const buscadaNormalizada = categoriaActiva.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+       cumpleCategoria = catNormalizada === buscadaNormalizada;
+    }
 
-    lista = lista.filter(p => {
-      // Comparamos el id_categoria del producto con el ID del botón
-      return p.id_categoria == idBuscado;
-    });
-  }
-
-  return lista;
+    return cumpleBusqueda && cumpleCategoria;
+  });
 });
 
-// 💡 CORRECCIÓN: Validación doble de stock al añadir
+// 💡 Lógica actualizada del Carrito con stock máximo
 const addToCart = (p) => {
   const stockDisponible = p.stock ?? p.cantidad ?? 0;
-  if (stockDisponible <= 0) return; // Bloqueo de seguridad
+  if (stockDisponible <= 0) return;
 
   const item = cart.value.find(i => i.id === p.id);
   if (item) {
@@ -223,11 +200,32 @@ const addToCart = (p) => {
   } else {
     cart.value.push({ 
       ...p, 
-      cantidad: 1,
-      // Aseguramos nombres estandarizados para el ticket
+      cantidad: 1, // La cantidad que se va a comprar
+      stock_maximo: stockDisponible, // Guardamos el límite para los botones + y -
       nombre: p.nombre || p.nombre_producto,
       precio: p.precio_venta || p.precio || 0
     });
+  }
+};
+
+// 💡 Nuevas funciones para los botones del ticket
+const incrementarCantidad = (item) => {
+  if (item.cantidad < item.stock_maximo) {
+    item.cantidad++;
+  } else {
+    alert("⚠️ Has alcanzado el límite de stock en bodega para este producto.");
+  }
+};
+
+const decrementarCantidad = (id) => {
+  const item = cart.value.find(i => i.id === id);
+  if (item) {
+    if (item.cantidad > 1) {
+      item.cantidad--;
+    } else {
+      // Si baja de 1, lo quitamos del carrito
+      removeFromCart(id);
+    }
   }
 };
 
@@ -239,45 +237,50 @@ const cartTotal = computed(() => cart.value.reduce((acc, i) => acc + (i.precio *
 
 const finalizarVenta = async () => {
   try {
-    const usuarioLogueado = JSON.parse(localStorage.getItem('user')) || {};
-    const idSucursal = usuarioLogueado.id_sucursal || 1; 
-
-    const payload = {
+    // 1. Guardar el ticket en Node.js (MongoDB)
+    const payloadVenta = {
       id_vendedor: props.userId,
-      id_sucursal_orig: idSucursal,
       items: cart.value,
       total_venta: cartTotal.value,
       estatus: 'Completada'
     };
+    await axios.post(`${API_NOSQL}/ventas`, payloadVenta);
     
-    await axios.post(`${API_NOSQL}/ventas`, payload);
+    // 2. 🌉 EL PUENTE: Avisarle a Laravel (SQL) que descuente el stock
+    // Extraemos solo el ID y la cantidad de lo que vendimos para no mandar datos basura
+    const itemsParaDescontar = cart.value.map(item => ({
+      id: item.id,
+      cantidad: item.cantidad
+    }));
+    await axios.post(`${API_SQL}/productos/descontar-stock`, { items: itemsParaDescontar });
+
+    alert("✅ ¡Venta registrada en Mongo y Stock descontado en SQL!");
     
-    alert("✅ ¡Venta registrada con éxito en MongoDB Atlas!");
-    
+    // 3. Limpiamos y recargamos
     cart.value = []; 
     searchQuery.value = '';
     categoriaActiva.value = 'Todos'; 
-    cargarInventarioInicial(); // Recargamos para ver el stock descontado
+    
+    // Al recargar, automáticamente traerá el nuevo stock de Laravel y verás que ya bajó de 20
+    cargarInventarioInicial(); 
     
   } catch (e) {
-    const errorReal = e.response?.data?.error || e.response?.data?.msg || e.message;
-    alert("❌ Falló Node.js: " + errorReal);
-    console.error("Detalle completo del error:", e.response?.data);
+    const errorReal = e.response?.data?.error || e.response?.data?.message || e.message;
+    alert("❌ Error en la operación: " + errorReal);
   }
 };
+
+
 </script>
 
 <style scoped>
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
 
-/* Scrollbars Cyberpunk */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #05080a; border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: #0c1215; border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.5); }
-
-/* Oculta la barra de scroll en los botones de categoría */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
