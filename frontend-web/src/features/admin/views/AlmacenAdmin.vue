@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import axios from 'axios';
-import ProductFormModal from '../modals/ProductFormModal.vue';
+import ProductFormModal from '@/features/admin/modals/ProductFormModal.vue';
 
 const busqueda = ref("");
 const productos = ref([]);
@@ -63,7 +63,7 @@ onMounted(cargarProductos);
     </header>
 
     <div class="table-container shadow-neon">
-      <table class="main-table">
+      <div class="overflow-x-auto w-full"><table class="main-table">
         <thead>
           <tr>
             <th>SKU</th><th>PRODUCTO</th><th>MARCA</th><th>VENTA</th><th>ACCIONES</th>
@@ -81,7 +81,7 @@ onMounted(cargarProductos);
             </td>
           </tr>
         </tbody>
-      </table>
+      </table></div>
     </div>
 
     <ProductFormModal 

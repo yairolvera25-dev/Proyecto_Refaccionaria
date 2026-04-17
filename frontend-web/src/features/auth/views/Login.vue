@@ -1,8 +1,9 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, reactive } from 'vue';
-import FondoMeteoritos from '../../../shared/components/FondoMeteoritos.vue';
+import FondoMeteoritos from '@/shared/components/FondoMeteoritos.vue';
 import { useRouter } from 'vue-router';
-import { authService } from '../../../core/services/authService';
+import { authService } from '@/core/services/authService';
+import { z } from 'zod';
 
 const router = useRouter();
 
@@ -11,8 +12,17 @@ const rolActivo = ref('administrador');
 const cargando = ref(false);
 const mensaje = reactive({ texto: '', tipo: '' }); // Para errores o éxito
 const credenciales = reactive({ email: '', password: '' });
+const erroresZod = reactive({ email: '', password: '' });
 
-// Configuración de Temas (Colores Neón)
+// Validaciones Zod
+const loginSchema = z.object({
+  email: z.string().min(1, 'El correo no puede estar vacío').email('Formato de correo inválido'),
+  password: z.string().min(3, 'Mínimo 3 caracteres')
+});
+const botonBloqueado = computed(() => {
+  if (!credenciales.email || !credenciales.password) return true;
+  return !loginSchema.safeParse(credenciales).success;
+});
 const tema = computed(() => {
   switch (rolActivo.value) {
     case 'administrador': 
@@ -40,24 +50,47 @@ const tema = computed(() => {
   }
 });
 
-// FUNCIÓN DE LOGIN REAL
 const iniciarSesion = async () => {
   mensaje.texto = '';
-  router.push('/dashboard/administrador');
+  erroresZod.email = '';
+  erroresZod.password = '';
+
+  // 1. Zod Validation
+  const result = loginSchema.safeParse(credenciales);
+  if (!result.success) {
+    const fieldErrors = result.error.format();
+    if (fieldErrors.email) erroresZod.email = fieldErrors.email._errors[0];
+    if (fieldErrors.password) erroresZod.password = fieldErrors.password._errors[0];
+    mensaje.texto = "Error de validación. Revisa los campos resaltados en neón.";
+    mensaje.tipo = 'error';
+    return;
+  }
+
   cargando.value = true;
 
   try {
     const data = await authService.login(credenciales.email, credenciales.password);
     
     if (data.exito) {
-      // Guardamos al usuario de MongoDB
+      // Analizamos el rol devuelto por la Base de Datos
+      const rolDB = data.user.rol?.toLowerCase() || data.user.role?.toLowerCase();
+      
+      // REGLA ESTRICTA: Rol seleccionado visualmente vs Rol real en backend
+      if (rolDB !== rolActivo.value) {
+        // Limpiamos rastros
+        localStorage.clear();
+        
+        // Bloqueo y mensaje de error en neón
+        mensaje.texto = `Error de acceso: Tu cuenta no tiene permisos de ${rolActivo.value.charAt(0).toUpperCase() + rolActivo.value.slice(1)}`;
+        mensaje.tipo = 'error';
+        return;
+      }
+
+      // 100% Correcto. Guardamos la sesión
       localStorage.setItem('user', JSON.stringify(data.user));
       
       mensaje.texto = "¡Acceso concedido!";
       mensaje.tipo = 'success';
-
-      // Redirección por Rol (el rol viene de la BD NoSQL)
-      const rolDB = data.user.rol.toLowerCase();
       
       setTimeout(() => {
         if (rolDB === 'administrador') router.push('/admin');
@@ -115,13 +148,19 @@ const iniciarSesion = async () => {
 
         <form @submit.prevent="iniciarSesion" class="w-full space-y-6">
           <div class="relative">
-            <input v-model="credenciales.email" type="email" placeholder="Correo Electrónico" required :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 border-gray-800 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', tema.inputFocus]">
+            <input v-model="credenciales.email" type="email" placeholder="Correo Electrónico" :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', erroresZod.email ? 'border-[#ff073a] shadow-[0_0_15px_rgba(255,7,58,0.5)] focus:border-[#ff073a]' : 'border-gray-800 ' + tema.inputFocus]" />
+            <p v-if="erroresZod.email" class="mt-2 text-[#ff073a] text-xs font-bold drop-shadow-[0_0_5px_rgba(255,7,58,0.8)] tracking-wide">{{ erroresZod.email }}</p>
           </div>
           <div class="relative">
-            <input v-model="credenciales.password" type="password" placeholder="Contraseña" required :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 border-gray-800 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', tema.inputFocus]">
+            <input v-model="credenciales.password" type="password" placeholder="Contraseña" :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base md:text-lg', erroresZod.password ? 'border-[#ff073a] shadow-[0_0_15px_rgba(255,7,58,0.5)] focus:border-[#ff073a]' : 'border-gray-800 ' + tema.inputFocus]" />
+            <p v-if="erroresZod.password" class="mt-2 text-[#ff073a] text-xs font-bold drop-shadow-[0_0_5px_rgba(255,7,58,0.8)] tracking-wide">{{ erroresZod.password }}</p>
           </div>
           
-          <button type="submit" :disabled="cargando" :class="['w-full text-white font-bold py-5 rounded-lg mt-8 transition-all duration-500 text-sm md:text-base tracking-[0.3em] uppercase shadow-xl hover:-translate-y-1', tema.boton, cargando ? 'opacity-50 cursor-not-allowed' : '']">
+          <div class="w-full flex justify-end text-xs text-gray-500 tracking-widest mt-2 hover:text-white transition-colors cursor-pointer" @click="router.push('/registro')">
+             ¿NO TIENES ROL? REGÍSTRATE
+          </div>
+          
+          <button type="submit" :disabled="cargando || botonBloqueado" :class="['w-full text-white font-bold py-5 rounded-lg mt-8 transition-all duration-500 text-sm md:text-base tracking-[0.3em] uppercase shadow-xl hover:-translate-y-1', tema.boton, (cargando || botonBloqueado) ? 'opacity-50 cursor-not-allowed' : '']">
             {{ cargando ? 'Validando en la Red...' : 'Iniciar Sesión' }}
           </button>
         </form>

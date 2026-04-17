@@ -150,8 +150,8 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'; 
 import apexchart from 'vue3-apexcharts'; 
-import { useDashboard } from '../../../core/composables/useDashboard';
-import OrderModal from './OrderModal.vue';
+import { useDashboard } from '@/core/composables/useDashboard';
+import OrderModal from '@/features/vendedor/components/OrderModal.vue';
 
 const props = defineProps(['userId']);
 

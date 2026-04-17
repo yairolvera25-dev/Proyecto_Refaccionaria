@@ -10,11 +10,7 @@ const emit = defineEmits(['cambiarSeccion']);
 const router = useRouter();
 
 const cerrarSesion = () => {
-  // Aquí puedes limpiar tus datos de sesión si los guardas en LocalStorage
-  // localStorage.removeItem('token');
-  // localStorage.removeItem('userRol');
-  
-  // Te redirige a la pantalla de Login (ajusta la ruta '/' si tu login se llama diferente)
+  localStorage.clear();
   router.push('/'); 
 };
 

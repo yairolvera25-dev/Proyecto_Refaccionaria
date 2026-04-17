@@ -50,7 +50,7 @@ defineEmits(['cambiarTab']);
 const router = useRouter();
 
 const logout = () => {
-  localStorage.removeItem('user');
+  localStorage.clear();
   router.push('/');
 };
 </script>
