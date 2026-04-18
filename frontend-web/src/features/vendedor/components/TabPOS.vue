@@ -91,25 +91,22 @@
             <button 
               @click="removeFromCart(item.id)" 
               class="text-[#ef4444]/50 hover:text-[#ef4444] transition-colors font-black text-xs px-2 py-1 rounded-md hover:bg-red-500/10"
-              title="Quitar producto"
             >
               ✕
             </button>           
           </div>
 
           <div class="flex justify-between items-end">
-            
             <div class="flex items-center gap-4 bg-[#0c1215] rounded-xl border border-[#ffffff]/10 px-3 py-1.5 shadow-inner">
-              <button @click="decrementarCantidad(item.id)" class="text-[#819da7] hover:text-white font-black text-lg leading-none transition-transform hover:scale-110">-</button>
+              <button @click="decrementarCantidad(item.id)" class="text-[#819da7] hover:text-white font-black text-lg transition-transform hover:scale-110">-</button>
               <span class="text-[#00ff88] font-mono text-sm font-black w-4 text-center">{{ item.cantidad }}</span>
-              <button @click="incrementarCantidad(item)" class="text-[#819da7] hover:text-white font-black text-lg leading-none transition-transform hover:scale-110">+</button>
+              <button @click="incrementarCantidad(item)" class="text-[#819da7] hover:text-white font-black text-lg transition-transform hover:scale-110">+</button>
             </div>
 
             <div class="text-right">
               <p class="text-[10px] text-[#819da7] font-mono mb-0.5">${{ item.precio }} c/u</p>
               <p class="font-bold font-mono text-[#00ff88] text-lg leading-none">${{ (item.cantidad * item.precio).toFixed(2) }}</p>
             </div>
-
           </div>
         </div>
         
@@ -128,7 +125,7 @@
         <button 
           @click="finalizarVenta" 
           :disabled="cart.length === 0" 
-          class="w-full bg-transparent border-2 border-[#00ff88] text-[#00ff88] hover:bg-[#00ff88] hover:text-[#05080a] py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_10px_rgba(0,255,136,0.2)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)] disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-[#00ff88] disabled:hover:shadow-none disabled:cursor-not-allowed text-sm"
+          class="w-full bg-transparent border-2 border-[#00ff88] text-[#00ff88] hover:bg-[#00ff88] hover:text-[#05080a] py-5 rounded-2xl font-black uppercase tracking-[0.2em] transition-all shadow-[0_0_10px_rgba(0,255,136,0.2)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)] disabled:opacity-20 disabled:cursor-not-allowed text-sm"
         >
           CERRAR VENTA 🏁
         </button>
@@ -152,12 +149,13 @@ const searchResults = ref([]);
 const categorias = ['Todos', 'Motor', 'Frenos', 'Suspensión', 'Eléctrico', 'Filtros', 'Accesorios'];
 const categoriaActiva = ref('Todos');
 
+// 1. Carga inicial desde MySQL
 const cargarInventarioInicial = async () => {
   try {
     const res = await axios.get(`${API_SQL}/productos`);
     searchResults.value = res.data.data ? res.data.data : res.data;
   } catch(e) {
-    console.error("No se pudo cargar el inventario real:", e);
+    console.error("Error cargando inventario inicial:", e);
     searchResults.value = [];
   }
 };
@@ -166,6 +164,7 @@ onMounted(() => {
   cargarInventarioInicial();
 });
 
+// 2. Filtro de búsqueda frontend
 const productosFiltrados = computed(() => {
   return searchResults.value.filter(p => {
     const term = searchQuery.value.toLowerCase().trim();
@@ -185,7 +184,7 @@ const productosFiltrados = computed(() => {
   });
 });
 
-// 💡 Lógica actualizada del Carrito con stock máximo
+// 3. Gestión de Carrito
 const addToCart = (p) => {
   const stockDisponible = p.stock ?? p.cantidad ?? 0;
   if (stockDisponible <= 0) return;
@@ -195,38 +194,27 @@ const addToCart = (p) => {
     if (item.cantidad < stockDisponible) {
       item.cantidad++;
     } else {
-      alert("⚠️ Has alcanzado el límite de stock en bodega para este producto.");
+      alert("⚠️ Has alcanzado el límite de stock en bodega.");
     }
   } else {
     cart.value.push({ 
       ...p, 
-      cantidad: 1, // La cantidad que se va a comprar
-      stock_maximo: stockDisponible, // Guardamos el límite para los botones + y -
+      cantidad: 1, 
+      stock_maximo: stockDisponible, 
       nombre: p.nombre || p.nombre_producto,
       precio: p.precio_venta || p.precio || 0
     });
   }
 };
 
-// 💡 Nuevas funciones para los botones del ticket
 const incrementarCantidad = (item) => {
-  if (item.cantidad < item.stock_maximo) {
-    item.cantidad++;
-  } else {
-    alert("⚠️ Has alcanzado el límite de stock en bodega para este producto.");
-  }
+  if (item.cantidad < item.stock_maximo) item.cantidad++;
+  else alert("⚠️ Sin stock suficiente.");
 };
 
 const decrementarCantidad = (id) => {
   const item = cart.value.find(i => i.id === id);
-  if (item) {
-    if (item.cantidad > 1) {
-      item.cantidad--;
-    } else {
-      // Si baja de 1, lo quitamos del carrito
-      removeFromCart(id);
-    }
-  }
+  if (item) item.cantidad > 1 ? item.cantidad-- : removeFromCart(id);
 };
 
 const removeFromCart = (id) => {
@@ -235,33 +223,41 @@ const removeFromCart = (id) => {
 
 const cartTotal = computed(() => cart.value.reduce((acc, i) => acc + (i.precio * i.cantidad), 0));
 
+// 4. EL PUENTE (Finalizar Venta)
 const finalizarVenta = async () => {
+  if (!cart.value.length) return;
+  
   try {
-    // 1. Guardar el ticket en Node.js (MongoDB)
+    // A. Guardar ticket en MongoDB (Node.js)
     const payloadVenta = {
       id_vendedor: props.userId,
-      items: cart.value,
-      total_venta: cartTotal.value,
+      items: cart.value.map(item => ({
+        id_producto_sql: item.id,
+        nombre: item.nombre,
+        cantidad: item.cantidad,
+        precio_unitario: item.precio
+      })),
+      total: cartTotal.value, // Requerido por Mongoose
+      metodo_pago: 'EFECTIVO', // Requerido por Mongoose
       estatus: 'Completada'
     };
+    
+    // Ruta limpia sin doble /api
     await axios.post(`${API_NOSQL}/ventas`, payloadVenta);
     
-    // 2. 🌉 EL PUENTE: Avisarle a Laravel (SQL) que descuente el stock
-    // Extraemos solo el ID y la cantidad de lo que vendimos para no mandar datos basura
+    // B. Descontar Stock en MySQL (Laravel)
     const itemsParaDescontar = cart.value.map(item => ({
       id: item.id,
       cantidad: item.cantidad
     }));
     await axios.post(`${API_SQL}/productos/descontar-stock`, { items: itemsParaDescontar });
 
-    alert("✅ ¡Venta registrada en Mongo y Stock descontado en SQL!");
+    alert("✅ ¡Venta registrada y stock actualizado con éxito!");
     
-    // 3. Limpiamos y recargamos
+    // Limpieza
     cart.value = []; 
     searchQuery.value = '';
     categoriaActiva.value = 'Todos'; 
-    
-    // Al recargar, automáticamente traerá el nuevo stock de Laravel y verás que ya bajó de 20
     cargarInventarioInicial(); 
     
   } catch (e) {
@@ -269,18 +265,14 @@ const finalizarVenta = async () => {
     alert("❌ Error en la operación: " + errorReal);
   }
 };
-
-
 </script>
 
 <style scoped>
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #05080a; border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: #0c1215; border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 136, 0.1); border: 1px solid rgba(0, 255, 136, 0.5); }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 </style>

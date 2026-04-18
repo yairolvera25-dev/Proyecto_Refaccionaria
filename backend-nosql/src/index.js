@@ -17,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // 4. Definición de Rutas
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/ventas', require('./routes/venta'));
 app.use('/api/ventas', require('./routes/venta')); // 💡 Esta línea ya carga todo lo de ventas
 
 // Ruta de prueba
