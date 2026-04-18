@@ -1,21 +1,10 @@
-const Venta = require('../models/Venta');
+import axios from 'axios';
 
-exports.crearVenta = async (req, res) => {
-    try {
-        const { id_vendedor, productos, total, metodo_pago } = req.body;
+const apiNoSQL = import.meta.env.VITE_API_URL_NOSQL;
+const apiSQL = import.meta.env.VITE_API_URL_SQL;
 
-        const nuevaVenta = new Venta({
-            id_vendedor,
-            productos,
-            total,
-            metodo_pago
-        });
-
-        await nuevaVenta.save();
-
-        res.status(201).json({ exito: true, venta: nuevaVenta });
-    } catch (error) {
-        console.error("Error al crear venta:", error);
-        res.status(500).json({ error: "Error en el servidor al procesar la venta" });
-    }
+export const apiService = {
+    // 💡 URL limpia: http://localhost:4000/api/ventas/vendedor/...
+    getVentasVendedor: (id) => axios.get(`${apiNoSQL}/ventas/vendedor/${id}`),
+    getProductosStock: () => axios.get(`${apiSQL}/productos/bajo-stock`)
 };
