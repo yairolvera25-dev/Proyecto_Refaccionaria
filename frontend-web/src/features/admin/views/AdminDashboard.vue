@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref } from "vue";
 import AdminSidebar from '@/features/admin/components/AdminSidebar.vue'
 import PersonalAdmin from '@/features/admin/views/PersonalAdmin.vue';
@@ -9,16 +9,16 @@ const seccionActiva = ref("dashboard");
 
 <template>
   <div class="app-shell">
-    <AdminSidebar 
-      :seccionActiva="seccionActiva" 
-      @cambiarSeccion="s => seccionActiva = s" 
+    <AdminSidebar
+      :seccionActiva="seccionActiva"
+      @cambiarSeccion="s => seccionActiva = s"
     />
 
     <main class="viewport">
       <div v-if="seccionActiva === 'usuarios'">
         <PersonalAdmin />
       </div>
-      
+
       <div v-else-if="seccionActiva === 'productos'">
         <AlmacenAdmin />
       </div>
@@ -28,26 +28,26 @@ const seccionActiva = ref("dashboard");
           <div class="hero-content">
             <h1 class="gradient-text text-glow">BIENVENIDO, ADMINISTRADOR</h1>
             <p class="subtitle">CENTRO DE MANDO INTEGRAL</p>
-            
+
             <div class="identity-grid">
               <div class="badge-card">
-                <span class="badge-icon">👤</span>
+                <span class="badge-icon">??</span>
                 <div class="badge-info">
                   <span class="badge-label">USUARIO ACTIVO</span>
-                  <span class="badge-value">Yair Olvera (Admin)</span>
+                  <span class="badge-value">Administrador</span>
                 </div>
               </div>
 
               <div class="badge-card">
-                <span class="badge-icon">🏢</span>
+                <span class="badge-icon">??</span>
                 <div class="badge-info">
                   <span class="badge-label">SUCURSAL</span>
-                  <span class="badge-value">Matriz Pachuca</span>
+                  <span class="badge-value">Matriz</span>
                 </div>
               </div>
 
               <div class="badge-card">
-                <span class="badge-icon pulse-soft">🔒</span>
+                <span class="badge-icon pulse-soft">??</span>
                 <div class="badge-info">
                   <span class="badge-label">ESTADO DE RED</span>
                   <span class="badge-value neon-status">
@@ -58,8 +58,8 @@ const seccionActiva = ref("dashboard");
             </div>
 
             <p class="connection-info">
-              <span class="db-tag">MongoDB Atlas</span> Cloud Sync &nbsp; | &nbsp; 
-              <span class="db-tag">MariaDB Virtual</span> Local Core
+              <span class="db-tag">Laravel API</span> | 
+              <span class="db-tag">MySQL Laragon</span>
             </p>
           </div>
         </div>
@@ -69,7 +69,6 @@ const seccionActiva = ref("dashboard");
 </template>
 
 <style scoped>
-
 .identity-grid {
   display: flex;
   flex-direction: column;
@@ -83,7 +82,6 @@ const seccionActiva = ref("dashboard");
     justify-content: center;
   }
 }
-
 
 .badge-card {
   background: rgba(0, 210, 255, 0.05);
@@ -152,40 +150,40 @@ const seccionActiva = ref("dashboard");
   color: #00d2ff;
   font-weight: bold;
 }
-.app-shell { 
-  display: flex; 
+
+.app-shell {
+  display: flex;
   flex-direction: column;
-  height: 100vh; 
+  height: 100vh;
   width: 100%;
   box-sizing: border-box;
+  background: radial-gradient(circle at top right, #0a192f, #02040a);
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
 }
+
 @media (min-width: 768px) {
   .app-shell {
     flex-direction: row;
   }
 }
-.app-shell {
-  background: radial-gradient(circle at top right, #0a192f, #02040a);
-  color: #fff; 
-  font-family: 'Inter', sans-serif; 
-  overflow: hidden;
-}
 
-.viewport { 
-  flex: 1; 
+.viewport {
+  flex: 1;
   width: 100%;
   box-sizing: border-box;
-  padding: 40px; 
-  overflow-y: auto; 
+  padding: 40px;
+  overflow-y: auto;
   overflow-x: hidden;
   background: transparent;
 }
 
-.welcome-screen { 
-  height: 100%; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+.welcome-screen {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .glass-hero {
@@ -216,45 +214,8 @@ const seccionActiva = ref("dashboard");
   margin-bottom: 40px;
 }
 
-.stats-overview {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 40px;
-}
-
-.stat-card {
-  background: rgba(0, 210, 255, 0.05);
-  padding: 15px 30px;
-  border-radius: 15px;
-  border: 1px solid rgba(0, 210, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-label {
-  font-size: 0.7rem;
-  color: #8ba3cb;
-  letter-spacing: 2px;
-}
-
-.stat-value {
-  font-weight: bold;
-  color: #00d2ff;
-}
-
-.pulse {
-  animation: pulse-glow 2s infinite;
-}
-
-@keyframes pulse-glow {
-  0% { text-shadow: 0 0 5px rgba(0, 210, 255, 0.5); }
-  50% { text-shadow: 0 0 20px rgba(0, 210, 255, 0.8); }
-  100% { text-shadow: 0 0 5px rgba(0, 210, 255, 0.5); }
-}
-
 .connection-info {
-  color: #475569;
+  color: #94a3b8;
   font-size: 0.9rem;
   font-style: italic;
 }

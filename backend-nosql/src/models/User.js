@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+﻿const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
     nombre: { type: String, required: true },
@@ -7,9 +7,8 @@ const UserSchema = new mongoose.Schema({
     id_rol: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Role',
-        required: true
+        required: false
     },
-    // Eliminamos id_sucursal porque ya no existe
     activo: { type: Boolean, default: false }
 }, { timestamps: true });
 

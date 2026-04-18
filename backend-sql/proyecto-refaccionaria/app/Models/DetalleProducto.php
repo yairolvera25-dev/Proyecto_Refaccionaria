@@ -9,6 +9,17 @@ class DetalleProducto extends Model
 {
     use HasFactory;
 
-    // Obligamos a que use el nombre exacto de la base de datos
     protected $table = 'detalle_producto';
+
+    protected $fillable = [
+        'id_producto',
+        'material',
+        'meses_garantia',
+        'estado_producto'
+    ];
+
+    public function producto()
+    {
+        return $this->belongsTo(Producto::class, 'id_producto');
+    }
 }

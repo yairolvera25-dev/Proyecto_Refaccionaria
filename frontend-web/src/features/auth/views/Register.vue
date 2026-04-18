@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, reactive } from 'vue';
 import FondoMeteoritos from '@/shared/components/FondoMeteoritos.vue';
 import { useRouter } from 'vue-router';
@@ -14,9 +14,9 @@ const erroresZod = reactive({ nombre: '', email: '', password: '' });
 
 // Validaciones Zod Estrictas
 const registerSchema = z.object({
-  nombre: z.string().min(1, 'El nombre no puede estar vacío').min(3, 'El nombre debe tener al menos 3 letras'),
-  email: z.string().min(1, 'El correo no puede estar vacío').email('Formato de correo inválido'),
-  password: z.string().min(3, 'Mínimo 3 caracteres')
+  nombre: z.string().min(1, 'El nombre no puede estar vacÃ­o').min(3, 'El nombre debe tener al menos 3 letras'),
+  email: z.string().min(1, 'El correo no puede estar vacÃ­o').email('Formato de correo invÃ¡lido'),
+  password: z.string().min(3, 'MÃ­nimo 3 caracteres')
 });
 
 import { computed } from 'vue';
@@ -39,7 +39,7 @@ const solicitarRol = async () => {
     if (fieldErrors.email) erroresZod.email = fieldErrors.email._errors[0];
     if (fieldErrors.password) erroresZod.password = fieldErrors.password._errors[0];
     
-    mensaje.texto = "Error. Corrige los campos resaltados en neón naranja.";
+    mensaje.texto = "Error. Corrige los campos resaltados en neÃ³n naranja.";
     mensaje.tipo = 'error';
     return;
   }
@@ -53,7 +53,7 @@ const solicitarRol = async () => {
       nombre_rol: 'Consultor' // Default role unless overridden
     });
 
-    mensaje.texto = "¡Registro Exitoso! Redirigiendo al login...";
+    mensaje.texto = "ÂSolicitud enviada. Queda pendiente de aprobación por un administrador.";
     mensaje.tipo = 'success';
     
     setTimeout(() => {
@@ -77,7 +77,7 @@ const solicitarRol = async () => {
       
       <div class="text-center w-full mb-10">
         <h1 class="text-3xl md:text-5xl font-bold tracking-[0.3em] mb-4 drop-shadow-[0_0_15px_rgba(255,100,0,0.4)] text-[#ff7300]">NUEVA CREDENCIAL</h1>
-        <p class="text-xs md:text-sm text-gray-500 tracking-[0.4em] uppercase">Solicita acceso al sistema (Esperando Aprobación)</p>
+        <p class="text-xs md:text-sm text-gray-500 tracking-[0.4em] uppercase">Solicita acceso al sistema (Esperando AprobaciÃ³n)</p>
       </div>
 
       <div class="w-full max-w-xl mx-auto flex flex-col items-center">
@@ -97,7 +97,7 @@ const solicitarRol = async () => {
           </div>
 
           <div class="relative">
-            <input v-model="form.password" type="password" placeholder="Contraseña de nueva cuenta" :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base', erroresZod.password ? 'border-[#ff5e00] shadow-[0_0_15px_rgba(255,94,0,0.5)] focus:border-[#ff5e00]' : 'border-gray-800 focus:border-gray-500']">
+            <input v-model="form.password" type="password" placeholder="ContraseÃ±a de nueva cuenta" :class="['w-full bg-[#0d1424]/80 backdrop-blur-sm border-b-2 rounded-t-lg px-6 py-5 text-white placeholder-gray-600 outline-none transition-all duration-300 text-base', erroresZod.password ? 'border-[#ff5e00] shadow-[0_0_15px_rgba(255,94,0,0.5)] focus:border-[#ff5e00]' : 'border-gray-800 focus:border-gray-500']">
             <p v-if="erroresZod.password" class="mt-2 text-[#ff5e00] text-xs font-bold drop-shadow-[0_0_5px_rgba(255,94,0,0.8)] tracking-wide">{{ erroresZod.password }}</p>
           </div>
           
@@ -113,3 +113,4 @@ const solicitarRol = async () => {
     </div>
   </div>
 </template>
+

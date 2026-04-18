@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 
@@ -8,4 +8,8 @@ router.post('/login', authController.login);
 router.put('/:id', authController.updateUser);
 router.delete('/:id', authController.deleteUser);
 
+router.put('/:id/aprobar', authController.aprobarUsuario);
+router.put('/:id/rechazar', authController.rechazarUsuario);
+
 module.exports = router;
+

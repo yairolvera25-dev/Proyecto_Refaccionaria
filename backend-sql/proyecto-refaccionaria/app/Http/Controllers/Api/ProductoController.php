@@ -10,18 +10,15 @@ class ProductoController extends Controller
 {
     public function index()
     {
-        // Traemos los productos incluyendo su marca y categoria
-        $productos = Producto::with(['marca', 'categoria'])->get();
-        
+        $productos = Producto::with(['marca', 'categoria', 'proveedor', 'detalle'])->get();
+
         return response()->json($productos, 200);
     }
 
     public function bajoStock()
     {
         try {
-            // Buscamos productos donde la columna 'stock' sea menor o igual a 10
-            // y nos traemos su marca y categoría para que Vue no llore
-            $productos = Producto::with(['marca', 'categoria'])
+            $productos = Producto::with(['marca', 'categoria', 'proveedor', 'detalle'])
                 ->where('stock', '<=', 10)
                 ->get();
 
@@ -41,25 +38,25 @@ class ProductoController extends Controller
     public function descontarStock(Request $request)
     {
         try {
-            $items = $request->items; // Recibimos el arreglo de productos vendidos
-            
+            $items = $request->items;
+
             foreach ($items as $item) {
                 $producto = Producto::find($item['id']);
+
                 if ($producto) {
-                    // Le restamos la cantidad vendida a lo que hay en bodega
                     $producto->stock = $producto->stock - $item['cantidad'];
                     $producto->save();
                 }
             }
 
             return response()->json([
-                'exito' => true, 
+                'exito' => true,
                 'message' => 'Inventario actualizado correctamente'
             ], 200);
 
         } catch (\Exception $e) {
             return response()->json([
-                'exito' => false, 
+                'exito' => false,
                 'message' => 'Error al descontar stock: ' . $e->getMessage()
             ], 500);
         }
