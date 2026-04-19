@@ -253,11 +253,16 @@ const finalizarVenta = async () => {
     await axios.post(`${API_NOSQL}/ventas`, payloadVenta);
     
     // Petición al Backend SQL (Laravel) para bajar el stock
+    // Petición al Backend SQL (Laravel) para bajar el stock
     const itemsParaDescontar = cart.value.map(item => ({
       id: item.id,
       cantidad: item.cantidad
     }));
-    await axios.post(`${API_SQL}/productos/descontar-stock`, { items: itemsParaDescontar });
+
+    // Enviamos con la llave 'productos' que es el estándar de validación
+    await axios.post(`${API_SQL}/productos/descontar-stock`, { 
+      productos: itemsParaDescontar 
+    });
 
     alert("✅ ¡Venta registrada y stock actualizado con éxito!");
     
