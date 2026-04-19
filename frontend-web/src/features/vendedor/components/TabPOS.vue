@@ -255,16 +255,19 @@ const finalizarVenta = async () => {
     // Petición al Backend SQL (Laravel) para bajar el stock
     // Petición al Backend SQL (Laravel) para bajar el stock
 // 1. Preparamos el arreglo simple
+// 1. Preparamos el arreglo con los nombres exactos de la tabla SQL
     const itemsParaDescontar = cart.value.map(item => ({
-      id: item.id,
+      id: Number(item.id), // Forzamos a que sea número por si acaso
       cantidad: item.cantidad
     }));
 
-    // 2. Enviamos el arreglo directo sin "envolverlo" en otra llave
-    // Muchas veces Laravel espera recibir el array directamente en el body
-    await axios.post(`${API_SQL}/productos/descontar-stock`, itemsParaDescontar);
+    // 2. Enviamos el objeto con la llave 'productos'
+    // Laravel espera: { "productos": [ { "id": 1, "cantidad": 2 }, ... ] }
+    await axios.post(`${API_SQL}/productos/descontar-stock`, { 
+      productos: itemsParaDescontar 
+    });
 
-    alert("✅ ¡Venta registrada y stock actualizado!");
+    alert("✅ ¡Venta registrada y stock actualizado en TiDB Cloud!");
     
     // Limpiar todo tras el éxito
     cart.value = []; 
