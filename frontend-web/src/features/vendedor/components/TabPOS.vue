@@ -254,17 +254,17 @@ const finalizarVenta = async () => {
     
     // Petición al Backend SQL (Laravel) para bajar el stock
     // Petición al Backend SQL (Laravel) para bajar el stock
+// 1. Preparamos el arreglo simple
     const itemsParaDescontar = cart.value.map(item => ({
       id: item.id,
       cantidad: item.cantidad
     }));
 
-    // Enviamos con la llave 'productos' que es el estándar de validación
-    await axios.post(`${API_SQL}/productos/descontar-stock`, { 
-      productos: itemsParaDescontar 
-    });
+    // 2. Enviamos el arreglo directo sin "envolverlo" en otra llave
+    // Muchas veces Laravel espera recibir el array directamente en el body
+    await axios.post(`${API_SQL}/productos/descontar-stock`, itemsParaDescontar);
 
-    alert("✅ ¡Venta registrada y stock actualizado con éxito!");
+    alert("✅ ¡Venta registrada y stock actualizado!");
     
     // Limpiar todo tras el éxito
     cart.value = []; 
