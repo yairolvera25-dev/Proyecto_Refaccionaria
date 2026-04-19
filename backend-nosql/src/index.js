@@ -1,37 +1,35 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const conectarDB = require('./config/db');
 
 const app = express();
 
-// 1. Conexión a la base de datos
+// 1. ConexiÃ³n a la base de datos
 conectarDB();
 
-// 2. Configuración de CORS Mejorada
-// Al usar app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] })) sin parámetros, permites TODO por defecto.
-// Es lo mejor para desarrollo local entre varios dispositivos.
+// 2. ConfiguraciÃ³n de CORS (Permite que Vue se conecte sin problemas)
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE'] }));
 
-// 3. Middleware para entender datos JSON (Debe ir antes de las rutas)
+// 3. Middlewares (Debe ir ANTES de las rutas)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 4. Rutas del Sistema
+// 4. DefiniciÃ³n de Rutas
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/ventas', require('./routes/venta'));
+app.use('/api/ventas', require('./routes/venta')); // ðŸ’¡ Esta lÃ­nea ya carga todo lo de ventas
 
-
-// Ruta de prueba para verificar que el backend responde
+// Ruta de prueba
 app.get('/', (req, res) => {
-  res.send('API de Refaccionaria funcionando 🚀');
+  res.send('API de Refaccionaria funcionando ðŸš€');
 });
 
-// 5. Puerto dinámico
-const PORT = process.env.PORT || 4000; // Cambié a 4000 que es el que usas en tu .env
+// 5. Puerto y encendido
+const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Servidor corriendo en el puerto: ${PORT}`);
-  console.log(`🔗 Local: http://localhost:${PORT}`);
-  console.log(`✅ ¡Conexión exitosa a la Refaccionaria!`);
+  console.log(`ðŸš€ Servidor corriendo en el puerto: ${PORT}`);
+  console.log(`ðŸ”— Local: http://localhost:${PORT}`);
+  console.log(`âœ… Â¡ConexiÃ³n exitosa a MongoDB Atlas!`);
 });
+
