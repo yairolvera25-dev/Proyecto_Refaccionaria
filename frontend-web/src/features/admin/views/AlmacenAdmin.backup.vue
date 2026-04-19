@@ -37,7 +37,6 @@ const API_PROD = `${import.meta.env.VITE_API_URL_SQL}/productos`;
 const cargarProductos = async () => {
   try {
     cargando.value = true;
-    console.log("API_PROD:", API_PROD);
     const res = await axios.get(API_PROD);
     productos.value = Array.isArray(res.data) ? res.data : (res.data.data || []);
   } catch (error) {
@@ -80,9 +79,9 @@ const abrirEditar = (item) => {
     precio_compra: item.precio_compra || "",
     precio_venta: item.precio_venta || "",
     stock: item.stock || "",
-    categoria_id: item.id_categoria || "",
-    marca_id: item.id_marca || "",
-    proveedor_id: item.id_proveedor || ""
+    categoria_id: item.id_categoria || item.categoria?.id || "",
+    marca_id: item.id_marca || item.marca?.id || "",
+    proveedor_id: item.id_proveedor || item.proveedor?.id || ""
   };
   mostrarModalEditar.value = true;
 };
@@ -177,12 +176,12 @@ onMounted(cargarProductos);
             <tr>
               <th>SKU</th>
               <th>PRODUCTO</th>
+              <th>MARCA</th>
+              <th>CATEGORÍA</th>
+              <th>PROVEEDOR</th>
               <th>COMPRA</th>
               <th>VENTA</th>
               <th>STOCK</th>
-              <th>ID MARCA</th>
-              <th>ID CATEGORÍA</th>
-              <th>ID PROVEEDOR</th>
               <th>ACCIONES</th>
             </tr>
           </thead>
@@ -196,12 +195,12 @@ onMounted(cargarProductos);
             <tr v-for="item in datosFiltrados" :key="item.id">
               <td class="sku-text">{{ item.sku }}</td>
               <td class="bold">{{ item.nombre }}</td>
+              <td>{{ item.marca?.nombre_marca || '-' }}</td>
+              <td>{{ item.categoria?.nombre || '-' }}</td>
+              <td>{{ item.proveedor?.nombre_empresa || '-' }}</td>
               <td class="price">$ {{ item.precio_compra }}</td>
               <td class="price">$ {{ item.precio_venta }}</td>
               <td>{{ item.stock }}</td>
-              <td>{{ item.id_marca }}</td>
-              <td>{{ item.id_categoria }}</td>
-              <td>{{ item.id_proveedor }}</td>
               <td>
                 <div class="acciones">
                   <button class="btn-mini btn-edit" @click="abrirEditar(item)">
@@ -279,10 +278,12 @@ onMounted(cargarProductos);
   width: 100%;
   box-sizing: border-box;
 }
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -290,12 +291,15 @@ onMounted(cargarProductos);
   flex-wrap: wrap;
   align-items: center;
 }
-.left-tools, .right-tools {
+
+.left-tools,
+.right-tools {
   display: flex;
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
 }
+
 .glass-input {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(0, 210, 255, 0.3);
@@ -305,11 +309,14 @@ onMounted(cargarProductos);
   width: 350px;
   transition: all 0.3s;
 }
-.glass-input:focus, .input-modal:focus {
+
+.glass-input:focus,
+.input-modal:focus {
   border-color: #00d2ff;
   outline: none;
   box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
 }
+
 .btn-action {
   border: none;
   border-radius: 10px;
@@ -317,23 +324,29 @@ onMounted(cargarProductos);
   font-weight: 700;
   cursor: pointer;
 }
+
 .btn-new {
   background: #00ff88;
   color: #03131d;
 }
+
 .btn-edit {
   background: #00d2ff;
   color: #03131d;
 }
+
 .btn-delete {
   background: #ff4c4c;
   color: white;
 }
-.btn-reload, .btn-cancel {
+
+.btn-reload,
+.btn-cancel {
   background: rgba(15, 23, 42, 0.95);
   color: white;
   border: 1px solid rgba(0, 210, 255, 0.22);
 }
+
 .table-container {
   width: 100%;
   box-sizing: border-box;
@@ -343,10 +356,12 @@ onMounted(cargarProductos);
   border: 1px solid rgba(0, 210, 255, 0.2);
   padding: 10px;
 }
+
 .main-table {
   width: 100%;
   border-collapse: collapse;
 }
+
 .main-table th {
   padding: 15px;
   text-align: left;
@@ -355,31 +370,38 @@ onMounted(cargarProductos);
   border-bottom: 1px solid rgba(0, 210, 255, 0.1);
   letter-spacing: 1px;
 }
+
 .main-table td {
   padding: 15px;
   border-bottom: 1px solid rgba(0, 210, 255, 0.05);
   color: #e2e8f0;
 }
+
 .main-table tr:hover {
   background: rgba(0, 210, 255, 0.05);
 }
+
 .bold {
   color: #00d2ff;
   font-weight: bold;
 }
+
 .sku-text {
   color: #94a3b8;
   font-family: monospace;
 }
+
 .price {
   color: #10b981;
   font-weight: bold;
 }
+
 .acciones {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .btn-mini {
   border: none;
   border-radius: 8px;
@@ -387,10 +409,12 @@ onMounted(cargarProductos);
   font-weight: 700;
   cursor: pointer;
 }
+
 .empty-cell {
   text-align: center;
   color: #94a3b8;
 }
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -401,6 +425,7 @@ onMounted(cargarProductos);
   padding: 20px;
   z-index: 9999;
 }
+
 .modal-box {
   width: 100%;
   max-width: 520px;
@@ -410,23 +435,29 @@ onMounted(cargarProductos);
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
-.modal-header, .modal-footer {
+
+.modal-header,
+.modal-footer {
   padding: 18px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
+
 .modal-header {
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 }
+
 .modal-header h3 {
   margin: 0;
   color: white;
 }
+
 .modal-body {
   padding: 20px;
 }
+
 .input-modal {
   width: 100%;
   padding: 12px 14px;
@@ -436,6 +467,7 @@ onMounted(cargarProductos);
   color: white;
   border: 1px solid rgba(0, 210, 255, 0.2);
 }
+
 .btn-close {
   border: none;
   background: transparent;
@@ -443,16 +475,20 @@ onMounted(cargarProductos);
   font-size: 28px;
   cursor: pointer;
 }
+
 @media (max-width: 768px) {
   .glass-input {
     width: 100%;
   }
+
   .modal-box {
     max-width: 100%;
   }
+
   .modal-footer {
     flex-direction: column;
   }
+
   .modal-footer .btn-action {
     width: 100%;
   }

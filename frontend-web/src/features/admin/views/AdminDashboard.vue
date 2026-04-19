@@ -3,6 +3,8 @@ import { ref } from "vue";
 import AdminSidebar from '@/features/admin/components/AdminSidebar.vue'
 import PersonalAdmin from '@/features/admin/views/PersonalAdmin.vue';
 import AlmacenAdmin from '@/features/admin/views/AlmacenAdmin.vue';
+import ReportesVentasAdmin from '@/features/admin/views/ReportesVentasAdmin.vue';
+import VentasAdmin from '@/features/admin/views/VentasAdmin.vue';
 
 const seccionActiva = ref("dashboard");
 </script>
@@ -23,6 +25,14 @@ const seccionActiva = ref("dashboard");
         <AlmacenAdmin />
       </div>
 
+      <div v-else-if="seccionActiva === 'ventas'">
+        <VentasAdmin />
+      </div>
+
+      <div v-else-if="seccionActiva === 'reportes'">
+        <ReportesVentasAdmin />
+      </div>
+
       <div v-else class="welcome-screen">
         <div class="glass-hero shadow-neon">
           <div class="hero-content">
@@ -31,7 +41,7 @@ const seccionActiva = ref("dashboard");
 
             <div class="identity-grid">
               <div class="badge-card">
-                <span class="badge-icon">??</span>
+                <span class="badge-icon">👤</span>
                 <div class="badge-info">
                   <span class="badge-label">USUARIO ACTIVO</span>
                   <span class="badge-value">Administrador</span>
@@ -39,7 +49,7 @@ const seccionActiva = ref("dashboard");
               </div>
 
               <div class="badge-card">
-                <span class="badge-icon">??</span>
+                <span class="badge-icon">🏢</span>
                 <div class="badge-info">
                   <span class="badge-label">SUCURSAL</span>
                   <span class="badge-value">Matriz</span>
@@ -47,7 +57,7 @@ const seccionActiva = ref("dashboard");
               </div>
 
               <div class="badge-card">
-                <span class="badge-icon pulse-soft">??</span>
+                <span class="badge-icon">🟢</span>
                 <div class="badge-info">
                   <span class="badge-label">ESTADO DE RED</span>
                   <span class="badge-value neon-status">
@@ -58,8 +68,9 @@ const seccionActiva = ref("dashboard");
             </div>
 
             <p class="connection-info">
-              <span class="db-tag">Laravel API</span> | 
-              <span class="db-tag">MySQL Laragon</span>
+              <span class="db-tag">Laravel API</span> |
+              <span class="db-tag">MySQL Laragon</span> |
+              <span class="db-tag">MongoDB Atlas</span>
             </p>
           </div>
         </div>
@@ -82,7 +93,6 @@ const seccionActiva = ref("dashboard");
     justify-content: center;
   }
 }
-
 .badge-card {
   background: rgba(0, 210, 255, 0.05);
   border: 1px solid rgba(0, 210, 255, 0.2);
@@ -93,36 +103,30 @@ const seccionActiva = ref("dashboard");
   gap: 15px;
   transition: transform 0.3s ease, border-color 0.3s ease;
 }
-
 .badge-card:hover {
   transform: translateY(-5px);
   border-color: rgba(0, 210, 255, 0.6);
   background: rgba(0, 210, 255, 0.1);
   box-shadow: 0 5px 15px rgba(0, 210, 255, 0.2);
 }
-
 .badge-icon {
   font-size: 1.8rem;
 }
-
 .badge-info {
   display: flex;
   flex-direction: column;
   text-align: left;
 }
-
 .badge-label {
   font-size: 0.7rem;
   color: #8ba3cb;
   letter-spacing: 1px;
 }
-
 .badge-value {
   font-size: 1.1rem;
   font-weight: bold;
   color: #fff;
 }
-
 .neon-status {
   display: flex;
   align-items: center;
@@ -130,7 +134,6 @@ const seccionActiva = ref("dashboard");
   color: #00ff88;
   text-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
 }
-
 .status-dot {
   width: 8px;
   height: 8px;
@@ -139,18 +142,15 @@ const seccionActiva = ref("dashboard");
   box-shadow: 0 0 8px #00ff88;
   animation: blink 1.5s infinite;
 }
-
 @keyframes blink {
   0% { opacity: 0.4; }
   50% { opacity: 1; box-shadow: 0 0 15px #00ff88; }
   100% { opacity: 0.4; }
 }
-
 .db-tag {
   color: #00d2ff;
   font-weight: bold;
 }
-
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -162,13 +162,11 @@ const seccionActiva = ref("dashboard");
   font-family: 'Inter', sans-serif;
   overflow: hidden;
 }
-
 @media (min-width: 768px) {
   .app-shell {
     flex-direction: row;
   }
 }
-
 .viewport {
   flex: 1;
   width: 100%;
@@ -178,14 +176,12 @@ const seccionActiva = ref("dashboard");
   overflow-x: hidden;
   background: transparent;
 }
-
 .welcome-screen {
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .glass-hero {
   background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(20px);
@@ -195,7 +191,6 @@ const seccionActiva = ref("dashboard");
   text-align: center;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
-
 .gradient-text {
   font-size: 3.5rem;
   font-weight: 800;
@@ -205,7 +200,6 @@ const seccionActiva = ref("dashboard");
   margin-bottom: 10px;
   letter-spacing: -1px;
 }
-
 .subtitle {
   color: #8ba3cb;
   font-size: 1.2rem;
@@ -213,11 +207,9 @@ const seccionActiva = ref("dashboard");
   text-transform: uppercase;
   margin-bottom: 40px;
 }
-
 .connection-info {
   color: #94a3b8;
   font-size: 0.9rem;
   font-style: italic;
 }
 </style>
-

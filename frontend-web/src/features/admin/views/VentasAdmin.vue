@@ -1,88 +1,63 @@
-<script setup>
-import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
+﻿<template>
+  <div class="w-full min-h-screen bg-[#05080a] text-white flex flex-col overflow-x-hidden relative selection:bg-[#00ff88] selection:text-black">
+    <div class="fixed top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-[#00ff88]/5 via-transparent to-transparent pointer-events-none"></div>
 
-const ventas = ref([]);
-const filtroFecha = ref("");
+    <div class="w-full flex flex-wrap gap-3 mb-6 relative z-10">
+      <button
+        @click="activeTab = 'dashboard'"
+        :class="botonClase('dashboard')"
+      >
+        Resumen
+      </button>
 
-// ✅ URL CORREGIDA MANUALMENTE
-const API_VENTAS = `${import.meta.env.VITE_API_URL_NOSQL}/ventas`;
+      <button
+        @click="activeTab = 'pos'"
+        :class="botonClase('pos')"
+      >
+        Punto de venta
+      </button>
 
-const cargarVentas = async () => {
-  try {
-    const res = await axios.get(API_VENTAS);
-    ventas.value = res.data;
-  } catch (e) {
-    console.error("Error al cargar historial:", e);
-  }
-};
-
-const ventasFiltradas = computed(() => {
-  if (!filtroFecha.value) return ventas.value;
-  return ventas.value.filter(v => v.fecha_hora && v.fecha_hora.startsWith(filtroFecha.value));
-});
-
-const ingresosTotales = computed(() => {
-  return ventasFiltradas.value.reduce((acc, v) => acc + parseFloat(v.total_venta || 0), 0);
-});
-
-onMounted(cargarVentas);
-</script>
-
-<template>
-  <div class="view-container">
-    <header class="top-bar">
-      <div class="title-group">
-        <h2 class="neon-title">AUDITORÍA DE VENTAS</h2>
-        <p class="money-total">Ingresos: <span>$ {{ ingresosTotales.toFixed(2) }}</span></p>
-      </div>
-      <div class="filter-box">
-        <label>Fecha:</label>
-        <input type="date" v-model="filtroFecha" class="glass-input">
-      </div>
-    </header>
-
-    <div class="table-container shadow-neon">
-      <table class="main-table">
-        <thead>
-          <tr>
-            <th>TICKET</th>
-            <th>FECHA / HORA</th>
-            <th>VENDEDOR</th>
-            <th>PRODUCTOS</th>
-            <th>TOTAL</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="v in ventasFiltradas" :key="v._id">
-            <td class="id-text">#{{ v._id.slice(-6).toUpperCase() }}</td>
-            <td class="time-text">{{ v.fecha_hora ? new Date(v.fecha_hora).toLocaleString() : 'S/F' }}</td>
-            <td class="bold">User: {{ v.id_vendedor?.slice(-4) || 'Admin' }}</td>
-            <td>
-              <div class="p-list">
-                <span v-for="(p, i) in v.productos_vendidos" :key="i" class="p-tag">
-                   ID: {{ p.id_producto?.slice(-4) }} ({{ p.cantidad }}pza)
-                </span>
-              </div>
-            </td>
-            <td class="price">$ {{ parseFloat(v.total_venta || 0).toFixed(2) }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <button
+        @click="activeTab = 'inventory'"
+        :class="botonClase('inventory')"
+      >
+        Inventario
+      </button>
     </div>
+
+    <main class="w-full flex-1 relative z-10">
+      <TabResumen v-if="activeTab === 'dashboard'" :userId="userId" />
+      <TabPOS v-if="activeTab === 'pos'" :userId="userId" />
+      <TabInventario v-if="activeTab === 'inventory'" />
+    </main>
   </div>
 </template>
 
-<style scoped>
-.neon-title { color: #fff; text-shadow: 0 0 10px #00ff88; margin: 0; }
-.money-total span { color: #00ff88; font-weight: bold; font-size: 1.5rem; }
-.top-bar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
-.glass-input { background: rgba(30, 41, 59, 0.7); border: 1px solid #00ff88; color: white; padding: 8px; border-radius: 8px; }
-.table-container { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 15px; padding: 20px; }
-.main-table { width: 100%; border-collapse: collapse; color: white; }
-.main-table th { color: #00ff88; text-align: left; padding: 12px; border-bottom: 2px solid rgba(0,255,136,0.1); }
-.main-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.p-tag { background: rgba(0, 210, 255, 0.1); color: #00d2ff; padding: 2px 5px; border-radius: 4px; font-size: 0.7rem; margin-right: 5px; }
-.price { font-weight: bold; color: #00ff88; }
-.id-text { color: #64748b; font-family: monospace; }
-</style>
+<script setup>
+import { ref, onMounted } from 'vue';
+
+import TabResumen from '@/features/vendedor/components/TabResumen.vue';
+import TabPOS from '@/features/vendedor/components/TabPOS.vue';
+import TabInventario from '@/features/vendedor/components/TabInventario.vue';
+
+const activeTab = ref('pos');
+const userId = ref('');
+const userName = ref('');
+
+onMounted(() => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (!user) return;
+
+  userName.value = user.nombre || 'Administrador';
+  userId.value = user._id || user.id || '';
+});
+
+const botonClase = (tab) => {
+  return [
+    'px-5 py-3 rounded-2xl text-sm font-black uppercase tracking-wider transition-all border',
+    activeTab.value === tab
+      ? 'bg-[#00ff88] text-[#05080a] border-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.4)]'
+      : 'bg-[#0c1215] text-[#819da7] border-[#ffffff]/10 hover:border-[#00ff88]/50 hover:text-[#00ff88]'
+  ];
+};
+</script>

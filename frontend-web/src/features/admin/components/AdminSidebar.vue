@@ -1,8 +1,5 @@
-﻿import { ref, onMounted } from 'vue';
-const user = ref(null);
-onMounted(()=>{ user.value = JSON.parse(localStorage.getItem('user')) });
-<script setup>
-import { defineProps, defineEmits } from "vue";
+﻿<script setup>
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 defineProps({
@@ -11,6 +8,12 @@ defineProps({
 
 const emit = defineEmits(["cambiarSeccion"]);
 const router = useRouter();
+const user = ref(null);
+
+onMounted(() => {
+  const raw = localStorage.getItem("user");
+  user.value = raw ? JSON.parse(raw) : null;
+});
 
 const cerrarSesion = () => {
   localStorage.clear();
@@ -21,30 +24,39 @@ const cerrarSesion = () => {
 <template>
   <aside class="sidebar">
     <div class="brand-box">
-      <div style='margin-bottom:20px'>
-        <p style='color:white'>{{ user?.nombre }}</p>
-        <small style='color:#00d2ff'>{{ user?.rol }}</small>
+      <div class="user-box">
+        <p class="user-name">{{ user?.nombre || 'Administrador' }}</p>
+        <small class="user-role">{{ user?.rol || 'Sin rol' }}</small>
       </div>
+
       <h2>REFACCIONARIA <span>LOS AMIGOS</span></h2>
     </div>
 
     <nav class="menu">
       <div class="nav-item" :class="{ active: seccionActiva === 'dashboard' }" @click="emit('cambiarSeccion', 'dashboard')">
-        ?? Overview
+        📊 Overview
       </div>
 
       <div class="nav-item" :class="{ active: seccionActiva === 'usuarios' }" @click="emit('cambiarSeccion', 'usuarios')">
-        ?? Personal
+        👥 Personal
       </div>
 
       <div class="nav-item" :class="{ active: seccionActiva === 'productos' }" @click="emit('cambiarSeccion', 'productos')">
-        ?? Almacén
+        📦 Almacén
+      </div>
+
+      <div class="nav-item" :class="{ active: seccionActiva === 'ventas' }" @click="emit('cambiarSeccion', 'ventas')">
+        💳 Ventas
+      </div>
+
+      <div class="nav-item" :class="{ active: seccionActiva === 'reportes' }" @click="emit('cambiarSeccion', 'reportes')">
+        📈 Reportes
       </div>
     </nav>
 
     <div class="logout-container">
       <button class="logout-btn" @click="cerrarSesion">
-        <span class="icon">??</span> CERRAR SESIÓN
+        <span class="icon">⏻</span> CERRAR SESIÓN
       </button>
     </div>
   </aside>
@@ -60,33 +72,42 @@ const cerrarSesion = () => {
   display: flex;
   flex-direction: column;
 }
-
 .brand-box {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 15px;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
-
+.user-box {
+  background: rgba(0, 210, 255, 0.05);
+  border: 1px solid rgba(0, 210, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.user-name {
+  margin: 0;
+  color: white;
+  font-weight: 700;
+}
+.user-role {
+  color: #00d2ff;
+}
 h2 {
   font-size: 1.2rem;
   color: #fff;
   letter-spacing: 2px;
   margin: 0;
 }
-
 h2 span {
   color: #00d2ff;
   text-shadow: 0 0 5px rgba(0, 210, 255, 0.5);
 }
-
 .menu {
   display: flex;
   flex-direction: column;
   gap: 10px;
   flex: 1;
 }
-
 .nav-item {
   padding: 15px 20px;
   border-radius: 12px;
@@ -99,14 +120,12 @@ h2 span {
   gap: 12px;
   border: 1px solid transparent;
 }
-
 .nav-item:hover {
   background: rgba(0, 210, 255, 0.05);
   color: #00d2ff;
   border: 1px solid rgba(0, 210, 255, 0.3);
   box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
 }
-
 .nav-item.active {
   background: linear-gradient(90deg, rgba(0, 210, 255, 0.15) 0%, transparent 100%);
   color: #00d2ff;
@@ -114,13 +133,11 @@ h2 span {
   border-left: 4px solid #00d2ff;
   box-shadow: -5px 0 15px rgba(0, 210, 255, 0.2);
 }
-
 .logout-container {
   margin-top: auto;
   padding-top: 20px;
   border-top: 1px solid rgba(0, 210, 255, 0.1);
 }
-
 .logout-btn {
   width: 100%;
   background: transparent;
@@ -138,7 +155,6 @@ h2 span {
   font-family: inherit;
   letter-spacing: 1px;
 }
-
 .logout-btn:hover {
   background: rgba(255, 76, 76, 0.1);
   border-color: #ff4c4c;
@@ -146,5 +162,3 @@ h2 span {
   color: #fff;
 }
 </style>
-
-
