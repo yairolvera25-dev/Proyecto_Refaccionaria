@@ -252,22 +252,21 @@ const finalizarVenta = async () => {
     // Petición al Backend NoSQL (Node)
     await axios.post(`${API_NOSQL}/ventas`, payloadVenta);
     
-    // Petición al Backend SQL (Laravel) para bajar el stock
-    // Petición al Backend SQL (Laravel) para bajar el stock
-// 1. Preparamos el arreglo simple
-// 1. Preparamos el arreglo con los nombres exactos de la tabla SQL
-    const itemsParaDescontar = cart.value.map(item => ({
-      id: Number(item.id), // Forzamos a que sea número por si acaso
-      cantidad: item.cantidad
-    }));
-
-    // 2. Enviamos el objeto con la llave 'productos'
-    // Laravel espera: { "productos": [ { "id": 1, "cantidad": 2 }, ... ] }
-    await axios.post(`${API_SQL}/productos/descontar-stock`, { 
-      productos: itemsParaDescontar 
+    /// REEMPLAZA DESDE AQUÍ:
+    // En lugar de una sola petición para todos, enviamos una por cada producto
+    // para cumplir con la validación de Laravel que pide "id" y "cantidad"
+    const promesasDescuento = cart.value.map(item => {
+      return axios.post(`${API_SQL}/productos/descontar-stock`, {
+        id: Number(item.id),
+        cantidad: item.cantidad
+      });
     });
 
-    alert("✅ ¡Venta registrada y stock actualizado en TiDB Cloud!");
+    // Esperamos a que todas las peticiones terminen
+    await Promise.all(promesasDescuento);
+
+    alert("✅ ¡Venta registrada y stock actualizado con éxito!");
+    // HASTA AQUÍ
     
     // Limpiar todo tras el éxito
     cart.value = []; 
