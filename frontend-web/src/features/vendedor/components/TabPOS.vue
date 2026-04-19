@@ -225,25 +225,34 @@ const removeFromCart = (id) => {
 const cartTotal = computed(() => cart.value.reduce((acc, i) => acc + (i.precio * i.cantidad), 0));
 
 // 4. EL PUENTE (Finalizar Venta)
+// 4. EL PUENTE (Finalizar Venta) - CORREGIDO ✅
 const finalizarVenta = async () => {
   if (!cart.value.length) return;
   
   try {
     const payloadVenta = {
-      id_vendedor: props.userId,
-      items: cart.value.map(item => ({
-        id_producto_sql: item.id,
-        nombre: item.nombre,
+      // 1. Debe ser el ID de Mongo del vendedor
+      id_vendedor: props.userId, 
+      
+      // 2. Cambiamos 'items' por 'productos_vendidos' para que coincida con tu Schema de Mongo
+      productos_vendidos: cart.value.map(item => ({
+        id_producto: String(item.id), // Lo convertimos a String por si acaso
         cantidad: item.cantidad,
-        precio_unitario: item.precio
+        precio_unitario: item.precio,
+        subtotal: item.cantidad * item.precio
       })),
-      total: cartTotal.value, 
-      metodo_pago: 'EFECTIVO', 
-      estatus: 'Completada'
+      
+      // 3. Cambiamos 'total' por 'total_venta' (Esto quita el error de validación)
+      total_venta: cartTotal.value, 
+      
+      estatus: 'Completada',
+      fecha_hora: new Date()
     };
     
+    // Petición al Backend NoSQL (Node)
     await axios.post(`${API_NOSQL}/ventas`, payloadVenta);
     
+    // Petición al Backend SQL (Laravel) para bajar el stock
     const itemsParaDescontar = cart.value.map(item => ({
       id: item.id,
       cantidad: item.cantidad
@@ -252,6 +261,7 @@ const finalizarVenta = async () => {
 
     alert("✅ ¡Venta registrada y stock actualizado con éxito!");
     
+    // Limpiar todo tras el éxito
     cart.value = []; 
     searchQuery.value = '';
     categoriaActiva.value = 'Todos'; 
@@ -260,6 +270,7 @@ const finalizarVenta = async () => {
   } catch (e) {
     const errorReal = e.response?.data?.error || e.response?.data?.message || e.message;
     alert("❌ Error en la operación: " + errorReal);
+    console.error("Detalle del error:", e.response?.data);
   }
 };
 </script>
