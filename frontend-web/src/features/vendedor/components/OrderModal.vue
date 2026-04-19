@@ -1,12 +1,12 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 modal-wrapper">
+  <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 modal-wrapper">
     <div @click="$emit('close')" class="absolute inset-0 bg-black/90 backdrop-blur-md"></div>
 
-    <div class="relative bg-[#0c1215] border border-[#00ff88]/30 w-full max-w-2xl rounded-[3rem] shadow-[0_0_60px_rgba(0,0,0,1)] overflow-hidden animate-fade-in flex flex-col md:flex-row">
+    <div class="relative bg-[#0c1215] border border-[#00ff88]/30 w-full max-w-2xl rounded-3xl sm:rounded-[3rem] shadow-[0_0_60px_rgba(0,0,0,1)] overflow-hidden animate-fade-in flex flex-col md:flex-row max-h-[90vh] sm:max-h-[85vh]">
       
-      <div id="print-area" class="bg-white text-black p-8 w-full md:w-2/3 font-mono ticket-print-visual">
+      <div id="print-area" class="bg-white text-black p-6 sm:p-8 w-full md:w-2/3 font-mono ticket-print-visual overflow-y-auto custom-scrollbar">
         <div class="text-center border-b-2 border-dashed border-black pb-4 mb-4">
-          <h3 class="text-xl font-black uppercase tracking-tighter text-black">Refaccionaria Los Amigos</h3>
+          <h3 class="text-lg sm:text-xl font-black uppercase tracking-tighter text-black leading-tight mb-2">Refaccionaria<br>Los Amigos</h3>
           <div class="flex justify-between text-[9px] mt-2 px-2 text-black font-bold">
             <span>Vend: {{ order?.id_vendedor?.slice(-5) || 'SISTEMA' }}</span>
             <span>Folio: #{{ order?._id?.slice(-6).toUpperCase() }}</span>
@@ -14,59 +14,62 @@
           <p class="text-[10px] font-bold mt-1 text-black">{{ formatearFechaCompleta(order?.createdAt) }}</p>
         </div>
 
-        <div class="overflow-x-auto w-full"><table class="w-full text-[11px] mb-6 border-collapse">
-          <thead>
-            <tr class="border-b-2 border-black text-black text-left">
-              <th class="pb-1 w-10">Cant</th>
-              <th class="pb-1">Descripción / Pieza</th>
-              <th class="pb-1 text-right w-16">Total</th>
-            </tr>
-          </thead>
-          <tbody class="text-black">
-            <tr v-for="item in (order?.productos_vendidos || [])" :key="item.id_producto || item._id" class="border-b border-gray-200">
-              <td class="py-2 align-top text-black">{{ item.cantidad || 1 }}</td>
-              <td class="py-2 uppercase leading-tight text-black">
-                {{ item.nombre_pieza || item.nombre || 'PIEZA' }}
-              </td>
-              <td class="py-2 text-right font-bold align-top text-black">
-                ${{ ((item.cantidad || 1) * (item.precio_unitario || item.precio || 0)).toFixed(2) }}
-              </td>
-            </tr>
-            <tr v-if="!order?.productos_vendidos?.length">
-              <td colspan="3" class="py-10 text-center text-[10px] italic opacity-50 text-black">
-                Sin detalles de productos
-              </td>
-            </tr>
-          </tbody>
-        </table></div>
+        <div class="overflow-x-auto w-full table-wrap">
+          <table class="w-full text-[10px] sm:text-[11px] mb-6 border-collapse min-w-[200px]">
+            <thead>
+              <tr class="border-b-2 border-black text-black text-left">
+                <th class="pb-1 w-10">Cant</th>
+                <th class="pb-1">Descripción / Pieza</th>
+                <th class="pb-1 text-right w-16">Total</th>
+              </tr>
+            </thead>
+            <tbody class="text-black">
+              <tr v-for="item in (order?.productos_vendidos || [])" :key="item.id_producto || item._id" class="border-b border-gray-200">
+                <td class="py-2 align-top text-black font-bold">{{ item.cantidad || 1 }}</td>
+                <td class="py-2 uppercase leading-tight text-black pr-2">
+                  {{ item.nombre_pieza || item.nombre || 'PIEZA' }}
+                </td>
+                <td class="py-2 text-right font-bold align-top text-black">
+                  ${{ ((item.cantidad || 1) * (item.precio_unitario || item.precio || 0)).toFixed(2) }}
+                </td>
+              </tr>
+              <tr v-if="!order?.productos_vendidos?.length">
+                <td colspan="3" class="py-10 text-center text-[10px] italic opacity-50 text-black">
+                  Sin detalles de productos
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
         <div class="border-t-2 border-dashed border-black pt-4 text-black">
-          <div class="flex justify-between items-center text-sm font-black italic uppercase text-black">
+          <div class="flex justify-between items-center text-sm sm:text-base font-black italic uppercase text-black">
             <span>Total a Pagar</span>
-            <span class="text-2xl">${{ order?.total_venta }}</span>
+            <span class="text-xl sm:text-2xl">${{ Number(order?.total_venta || order?.total || 0).toFixed(2) }}</span>
           </div>
           <div class="mt-8 text-center">
-            <p class="text-[10px] font-black uppercase border-2 border-black p-2 text-black">*** Gracias por su preferencia ***</p>
+            <p class="text-[9px] sm:text-[10px] font-black uppercase border-2 border-black p-2 text-black">*** Gracias por su preferencia ***</p>
           </div>
         </div>
       </div>
 
-      <div class="p-8 flex-1 bg-[#05080a]/50 flex flex-col justify-between border-l border-[#ffffff]/5">
-        <div class="mb-10 text-center md:text-left">
-          <div class="flex items-center gap-2 mb-4 justify-center md:justify-start">
+      <div class="p-6 sm:p-8 flex-1 bg-[#05080a] md:bg-[#05080a]/50 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#ffffff]/10 flex-shrink-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] md:shadow-none">
+        
+        <div class="mb-6 md:mb-10 text-center md:text-left hidden sm:block">
+          <div class="flex items-center gap-2 mb-3 md:mb-4 justify-center md:justify-start">
             <span class="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse"></span>
-            <h4 class="text-[#00ff88] font-black uppercase text-xs tracking-widest">Módulo de Salida</h4>
+            <h4 class="text-[#00ff88] font-black uppercase text-[10px] sm:text-xs tracking-widest">Módulo de Salida</h4>
           </div>
-          <p class="text-[10px] text-[#819da7] leading-relaxed">
+          <p class="text-[9px] sm:text-[10px] text-[#819da7] leading-relaxed">
             Formato optimizado para ticketera térmica de 80mm. 
           </p>
         </div>
 
-        <div class="space-y-4">
-          <button @click="imprimirTicket" class="w-full bg-[#00ff88] text-black py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-neon hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
-            <span>🖨️</span> Ejecutar Impresión
+        <div class="space-y-3 sm:space-y-4 mt-auto">
+          <button @click="imprimirTicket" class="w-full bg-[#00ff88] text-black py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest shadow-neon hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+            <span class="text-base">🖨️</span> Ejecutar Impresión
           </button>
-          <button @click="$emit('close')" class="w-full bg-transparent border border-[#ffffff]/10 text-[#819da7] py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#ffffff]/5 transition-all">
+          <button @click="$emit('close')" class="w-full bg-transparent border border-[#ffffff]/10 text-[#819da7] py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest hover:bg-[#ffffff]/5 hover:text-white transition-all">
             Volver
           </button>
         </div>
@@ -148,8 +151,25 @@ const imprimirTicket = () => {
 .shadow-neon { box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
 
 .ticket-print-visual {
-  min-height: 500px;
+  min-height: 300px; /* Reducido un poco para celular */
   box-shadow: inset 0 0 50px rgba(0,0,0,0.05);
   background-color: white !important;
+}
+
+@media (min-width: 768px) {
+  .ticket-print-visual {
+    min-height: 500px;
+  }
+}
+
+/* Custom Scrollbar suave para el ticket en PC */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
+
+/* Deslizamiento suave en iOS/Android */
+.table-wrap, .custom-scrollbar {
+  -webkit-overflow-scrolling: touch;
 }
 </style>

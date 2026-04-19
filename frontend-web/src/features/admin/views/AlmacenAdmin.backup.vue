@@ -276,6 +276,7 @@ onMounted(cargarProductos);
   gap: 30px;
   animation: fadeIn 0.4s ease-out;
   width: 100%;
+  max-width: 100%; /* Asegura que no se desborde del padre */
   box-sizing: border-box;
 }
 
@@ -357,10 +358,22 @@ onMounted(cargarProductos);
   padding: 10px;
 }
 
+/* --- CLASES NUEVAS PARA EL SCROLL HORIZONTAL DE LA TABLA --- */
+.w-full {
+  width: 100%;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Deslizamiento suave en celulares */
+}
+
 .main-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px; /* Obliga a la tabla a mantener un ancho mínimo, habilitando el scroll en móvil */
 }
+/* ----------------------------------------------------------- */
 
 .main-table th {
   padding: 15px;
@@ -369,6 +382,7 @@ onMounted(cargarProductos);
   font-size: 0.8rem;
   border-bottom: 1px solid rgba(0, 210, 255, 0.1);
   letter-spacing: 1px;
+  white-space: nowrap; /* Evita que los títulos se rompan en dos líneas */
 }
 
 .main-table td {
@@ -408,6 +422,7 @@ onMounted(cargarProductos);
   padding: 8px 10px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .empty-cell {
@@ -466,6 +481,7 @@ onMounted(cargarProductos);
   background: #0f172a;
   color: white;
   border: 1px solid rgba(0, 210, 255, 0.2);
+  box-sizing: border-box; /* Para que el padding no rompa el ancho del input */
 }
 
 .btn-close {
@@ -478,7 +494,12 @@ onMounted(cargarProductos);
 
 @media (max-width: 768px) {
   .glass-input {
+    width: 100%; /* La barra de búsqueda ocupa todo el ancho */
+  }
+
+  .left-tools, .right-tools {
     width: 100%;
+    justify-content: space-between;
   }
 
   .modal-box {

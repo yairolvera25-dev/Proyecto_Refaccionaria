@@ -404,12 +404,36 @@ onMounted(cargar);
 </template>
 
 <style scoped>
+/* --- NUEVAS CLASES PARA CONTENER EL DESBORDAMIENTO --- */
 .personal-admin {
   color: #fff;
   padding: 24px;
   min-height: 100%;
   background: transparent;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box; /* Evita que el padding sume al ancho */
 }
+
+.bloque {
+  background: rgba(10, 18, 35, 0.85);
+  border: 1px solid rgba(0, 210, 255, 0.15);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 22px;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.06);
+  width: 100%;
+  box-sizing: border-box; /* Evita desbordamiento de bloque */
+  overflow: hidden;
+}
+
+.tabla-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Deslizamiento suave en iOS/Android */
+}
+/* ----------------------------------------------------- */
+
 .header {
   display: flex;
   justify-content: space-between;
@@ -431,15 +455,7 @@ onMounted(cargar);
   gap: 10px;
   flex-wrap: wrap;
 }
-.bloque {
-  background: rgba(10, 18, 35, 0.85);
-  border: 1px solid rgba(0, 210, 255, 0.15);
-  border-radius: 18px;
-  padding: 18px;
-  margin-bottom: 22px;
-  box-shadow: 0 0 20px rgba(0, 210, 255, 0.06);
-  overflow: hidden;
-}
+
 .bloque-titulo {
   display: flex;
   align-items: center;
@@ -469,14 +485,11 @@ onMounted(cargar);
   background: rgba(34, 197, 94, 0.15);
   color: #22c55e;
 }
-.tabla-wrap {
-  width: 100%;
-  overflow-x: auto;
-}
+
 .tabla {
   width: 100%;
   border-collapse: collapse;
-  min-width: 820px;
+  min-width: 820px; /* Obliga el scroll si no cabe en pantalla */
 }
 .tabla th,
 .tabla td {
@@ -494,6 +507,7 @@ onMounted(cargar);
 .tabla td {
   color: #e5e7eb;
 }
+
 .tag {
   display: inline-flex;
   align-items: center;
@@ -501,6 +515,7 @@ onMounted(cargar);
   border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
+  white-space: nowrap;
 }
 .tag.pendiente {
   background: rgba(251, 191, 36, 0.12);
@@ -514,6 +529,7 @@ onMounted(cargar);
   background: rgba(148, 163, 184, 0.12);
   color: #cbd5e1;
 }
+
 .select-inline,
 .select-rol,
 .input-modal {
@@ -526,6 +542,7 @@ onMounted(cargar);
   outline: none;
   font-size: 14px;
   margin-bottom: 14px;
+  box-sizing: border-box; /* Fundamental para inputs full-width */
 }
 .select-inline option,
 .select-rol option {
@@ -535,6 +552,7 @@ onMounted(cargar);
 .estado-select {
   min-width: 130px;
 }
+
 .acciones {
   display: flex;
   gap: 10px;
@@ -547,6 +565,7 @@ onMounted(cargar);
   font-weight: 700;
   cursor: pointer;
   transition: 0.2s ease;
+  white-space: nowrap;
 }
 .btn:hover {
   transform: translateY(-1px);
@@ -569,6 +588,7 @@ onMounted(cargar);
   color: #fff;
   border: 1px solid rgba(0, 210, 255, 0.22);
 }
+
 .empty-state {
   padding: 20px;
   text-align: center;
@@ -576,6 +596,7 @@ onMounted(cargar);
   border: 1px dashed rgba(148, 163, 184, 0.2);
   border-radius: 14px;
 }
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -594,7 +615,9 @@ onMounted(cargar);
   border-radius: 18px;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
   overflow: hidden;
+  box-sizing: border-box;
 }
+
 .modal-header,
 .modal-footer {
   padding: 18px 20px;
@@ -640,6 +663,7 @@ onMounted(cargar);
   font-size: 28px;
   cursor: pointer;
 }
+
 @media (max-width: 768px) {
   .personal-admin {
     padding: 14px;
@@ -647,12 +671,19 @@ onMounted(cargar);
   .header h2 {
     font-size: 22px;
   }
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .header-actions .btn-recargar {
+    flex: 1; /* Los botones crecen parejo en móvil */
+  }
   .bloque {
     padding: 14px;
     border-radius: 14px;
   }
   .tabla {
-    min-width: 700px;
+    min-width: 700px; /* Asegura que se active el scroll en móvil */
   }
   .modal-box {
     max-width: 100%;

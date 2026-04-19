@@ -9,7 +9,7 @@
       @cambiarTab="activeTab = $event" 
     />
 
-    <main class="w-full flex-1 p-6 lg:p-10 relative z-10">
+    <main class="w-full max-w-full flex-1 p-3 sm:p-6 lg:p-10 relative z-10 overflow-x-hidden">
       <TabResumen v-if="activeTab === 'dashboard'" :userId="userId" />
       <TabPOS v-if="activeTab === 'pos'" :userId="userId" />
       <TabInventario v-if="activeTab === 'inventory'" />

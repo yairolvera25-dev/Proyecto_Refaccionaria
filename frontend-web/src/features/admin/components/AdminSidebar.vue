@@ -64,19 +64,33 @@ const cerrarSesion = () => {
 
 <style scoped>
 .sidebar {
-  width: 260px;
-  background: rgba(5, 10, 20, 0.8);
-  backdrop-filter: blur(15px);
-  padding: 30px;
-  border-right: 1px solid rgba(0, 210, 255, 0.2);
+  width: 100%; /* 👈 Se adapta al ancho que le dé su contenedor padre */
+  height: 100%; /* 👈 Ocupa todo el alto disponible */
+  box-sizing: border-box; /* 👈 Evita que el padding lo haga más gordo */
+  background: transparent; /* El color de fondo lo maneja el padre en móviles */
+  padding: 20px; /* Reduje un poquito el padding general */
+  border-right: none; /* Quitamos el borde aquí para que lo maneje el padre */
   display: flex;
   flex-direction: column;
+  overflow-y: auto; /* Por si el menú crece mucho hacia abajo */
 }
+
+/* En escritorio, le regresamos sus estilos originales */
+@media (min-width: 768px) {
+  .sidebar {
+    width: 260px;
+    background: rgba(5, 10, 20, 0.8);
+    backdrop-filter: blur(15px);
+    padding: 30px;
+    border-right: 1px solid rgba(0, 210, 255, 0.2);
+  }
+}
+
 .brand-box {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 .user-box {
   background: rgba(0, 210, 255, 0.05);

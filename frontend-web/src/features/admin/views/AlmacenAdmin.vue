@@ -277,12 +277,15 @@ onMounted(cargarProductos);
   gap: 30px;
   animation: fadeIn 0.4s ease-out;
   width: 100%;
+  max-width: 100%; /* Asegura que no se desborde del padre */
   box-sizing: border-box;
 }
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -290,12 +293,15 @@ onMounted(cargarProductos);
   flex-wrap: wrap;
   align-items: center;
 }
-.left-tools, .right-tools {
+
+.left-tools,
+.right-tools {
   display: flex;
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
 }
+
 .glass-input {
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(0, 210, 255, 0.3);
@@ -305,11 +311,14 @@ onMounted(cargarProductos);
   width: 350px;
   transition: all 0.3s;
 }
-.glass-input:focus, .input-modal:focus {
+
+.glass-input:focus,
+.input-modal:focus {
   border-color: #00d2ff;
   outline: none;
   box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
 }
+
 .btn-action {
   border: none;
   border-radius: 10px;
@@ -317,23 +326,29 @@ onMounted(cargarProductos);
   font-weight: 700;
   cursor: pointer;
 }
+
 .btn-new {
   background: #00ff88;
   color: #03131d;
 }
+
 .btn-edit {
   background: #00d2ff;
   color: #03131d;
 }
+
 .btn-delete {
   background: #ff4c4c;
   color: white;
 }
-.btn-reload, .btn-cancel {
+
+.btn-reload,
+.btn-cancel {
   background: rgba(15, 23, 42, 0.95);
   color: white;
   border: 1px solid rgba(0, 210, 255, 0.22);
 }
+
 .table-container {
   width: 100%;
   box-sizing: border-box;
@@ -343,10 +358,24 @@ onMounted(cargarProductos);
   border: 1px solid rgba(0, 210, 255, 0.2);
   padding: 10px;
 }
+
+/* --- CLASES NUEVAS PARA EL SCROLL HORIZONTAL DE LA TABLA --- */
+.w-full {
+  width: 100%;
+}
+
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Deslizamiento suave en celulares */
+}
+
 .main-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px; /* Obliga a la tabla a mantener un ancho mínimo, habilitando el scroll en móvil */
 }
+/* ----------------------------------------------------------- */
+
 .main-table th {
   padding: 15px;
   text-align: left;
@@ -354,43 +383,54 @@ onMounted(cargarProductos);
   font-size: 0.8rem;
   border-bottom: 1px solid rgba(0, 210, 255, 0.1);
   letter-spacing: 1px;
+  white-space: nowrap; /* Evita que los títulos se rompan en dos líneas */
 }
+
 .main-table td {
   padding: 15px;
   border-bottom: 1px solid rgba(0, 210, 255, 0.05);
   color: #e2e8f0;
 }
+
 .main-table tr:hover {
   background: rgba(0, 210, 255, 0.05);
 }
+
 .bold {
   color: #00d2ff;
   font-weight: bold;
 }
+
 .sku-text {
   color: #94a3b8;
   font-family: monospace;
 }
+
 .price {
   color: #10b981;
   font-weight: bold;
 }
+
 .acciones {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .btn-mini {
   border: none;
   border-radius: 8px;
   padding: 8px 10px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
+
 .empty-cell {
   text-align: center;
   color: #94a3b8;
 }
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -401,6 +441,7 @@ onMounted(cargarProductos);
   padding: 20px;
   z-index: 9999;
 }
+
 .modal-box {
   width: 100%;
   max-width: 520px;
@@ -410,23 +451,29 @@ onMounted(cargarProductos);
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
-.modal-header, .modal-footer {
+
+.modal-header,
+.modal-footer {
   padding: 18px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
+
 .modal-header {
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 }
+
 .modal-header h3 {
   margin: 0;
   color: white;
 }
+
 .modal-body {
   padding: 20px;
 }
+
 .input-modal {
   width: 100%;
   padding: 12px 14px;
@@ -435,7 +482,9 @@ onMounted(cargarProductos);
   background: #0f172a;
   color: white;
   border: 1px solid rgba(0, 210, 255, 0.2);
+  box-sizing: border-box; /* Para que el padding no rompa el ancho del input */
 }
+
 .btn-close {
   border: none;
   background: transparent;
@@ -443,18 +492,27 @@ onMounted(cargarProductos);
   font-size: 28px;
   cursor: pointer;
 }
+
 @media (max-width: 768px) {
   .glass-input {
-    width: 100%;
+    width: 100%; /* La barra de búsqueda ocupa todo el ancho */
   }
+
+  .left-tools, .right-tools {
+    width: 100%;
+    justify-content: space-between; /* Alinea los botones bonito */
+  }
+
   .modal-box {
     max-width: 100%;
   }
+
   .modal-footer {
     flex-direction: column;
   }
+
   .modal-footer .btn-action {
-    width: 100%;
+    width: 100%; /* Botones de guardar del modal a tamaño completo */
   }
 }
 </style>
