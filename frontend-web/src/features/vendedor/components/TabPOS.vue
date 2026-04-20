@@ -118,9 +118,19 @@
       </div>
 
       <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-[#ffffff]/10">
-        <div class="flex justify-between items-end mb-6 sm:mb-8 bg-[#05080a] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#ffffff]/5">
-          <span class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-[#819da7]">Total a transferir</span>
-          <span class="text-2xl sm:text-4xl font-mono font-black text-[#00ff88] drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">${{ cartTotal.toFixed(2) }}</span>
+        <div class="space-y-2 mb-6 bg-[#05080a] p-4 rounded-2xl border border-[#ffffff]/5">
+          <div class="flex justify-between text-[10px] font-black text-[#819da7] uppercase tracking-widest">
+            <span>Subtotal</span>
+            <span>${{ cartSubtotal.toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between text-[10px] font-black text-[#819da7] uppercase tracking-widest">
+            <span>IVA (16%)</span>
+            <span>${{ cartTax.toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-end pt-2 border-t border-[#ffffff]/10">
+            <span class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-[#00ff88]">Total Neto</span>
+            <span class="text-2xl sm:text-4xl font-mono font-black text-[#00ff88] drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">${{ cartTotal.toFixed(2) }}</span>
+          </div>
         </div>
         
         <button 
@@ -214,7 +224,7 @@ const incrementarCantidad = (item) => {
 };
 
 const decrementarCantidad = (id) => {
-  const item = cart.value.find(i => i.id === id);
+  const item = cart.value.find(i => id === i.id);
   if (item) item.cantidad > 1 ? item.cantidad-- : removeFromCart(id);
 };
 
@@ -222,39 +232,33 @@ const removeFromCart = (id) => {
   cart.value = cart.value.filter(i => i.id !== id);
 };
 
-const cartTotal = computed(() => cart.value.reduce((acc, i) => acc + (i.precio * i.cantidad), 0));
+// Lógica de cálculos (IVA Incluido)
+const cartSubtotal = computed(() => cart.value.reduce((acc, i) => acc + (i.precio * i.cantidad), 0));
+const cartTax = computed(() => cartSubtotal.value * 0.16);
+const cartTotal = computed(() => cartSubtotal.value + cartTax.value);
 
 // 4. EL PUENTE (Finalizar Venta)
-// 4. EL PUENTE (Finalizar Venta) - CORREGIDO ✅
 const finalizarVenta = async () => {
   if (!cart.value.length) return;
   
   try {
     const payloadVenta = {
-      // 1. Debe ser el ID de Mongo del vendedor
       id_vendedor: props.userId, 
-      
-      // 2. Cambiamos 'items' por 'productos_vendidos' para que coincida con tu Schema de Mongo
       productos_vendidos: cart.value.map(item => ({
-        id_producto: String(item.id), // Lo convertimos a String por si acaso
+        id_producto: String(item.id),
         cantidad: item.cantidad,
         precio_unitario: item.precio,
         subtotal: item.cantidad * item.precio
       })),
-      
-      // 3. Cambiamos 'total' por 'total_venta' (Esto quita el error de validación)
-      total_venta: cartTotal.value, 
-      
+      total_venta: cartTotal.value, // Envía el total ya con IVA
       estatus: 'Completada',
       fecha_hora: new Date()
     };
     
-    // Petición al Backend NoSQL (Node)
+    // 1. Guardar en NoSQL (MongoDB)
     await axios.post(`${API_NOSQL}/ventas`, payloadVenta);
     
-    /// REEMPLAZA DESDE AQUÍ:
-    // En lugar de una sola petición para todos, enviamos una por cada producto
-    // para cumplir con la validación de Laravel que pide "id" y "cantidad"
+    // 2. Descontar en SQL (TiDB) - Una petición por producto para evitar errores de validación
     const promesasDescuento = cart.value.map(item => {
       return axios.post(`${API_SQL}/productos/descontar-stock`, {
         id: Number(item.id),
@@ -262,13 +266,11 @@ const finalizarVenta = async () => {
       });
     });
 
-    // Esperamos a que todas las peticiones terminen
     await Promise.all(promesasDescuento);
 
-    alert("✅ ¡Venta registrada y stock actualizado con éxito!");
-    // HASTA AQUÍ
+    alert("✅ Venta finalizada con éxito (IVA incluido).");
     
-    // Limpiar todo tras el éxito
+    // Limpiar interfaz
     cart.value = []; 
     searchQuery.value = '';
     categoriaActiva.value = 'Todos'; 
@@ -277,7 +279,6 @@ const finalizarVenta = async () => {
   } catch (e) {
     const errorReal = e.response?.data?.error || e.response?.data?.message || e.message;
     alert("❌ Error en la operación: " + errorReal);
-    console.error("Detalle del error:", e.response?.data);
   }
 };
 </script>
@@ -293,8 +294,8 @@ const finalizarVenta = async () => {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* 👈 Ajuste clave para dispositivos táctiles */
-.overflow-x-auto, .overflow-y-auto {
-  -webkit-overflow-scrolling: touch;
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #0c1215 #05080a;
 }
 </style>
