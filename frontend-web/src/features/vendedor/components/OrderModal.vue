@@ -11,7 +11,7 @@
             <span>Vend: {{ order?.id_vendedor?.slice(-5) || 'SISTEMA' }}</span>
             <span>Folio: #{{ order?._id?.slice(-6).toUpperCase() }}</span>
           </div>
-          <p class="text-[10px] font-bold mt-1 text-black">{{ formatearFechaCompleta(order?.createdAt) }}</p>
+          <p class="text-[10px] font-bold mt-1 text-black">{{ formatearFechaCompleta(order?.createdAt || order?.fecha_hora) }}</p>
         </div>
 
         <div class="overflow-x-auto w-full table-wrap">
@@ -27,10 +27,10 @@
               <tr v-for="item in (order?.productos_vendidos || [])" :key="item.id_producto || item._id" class="border-b border-gray-200">
                 <td class="py-2 align-top text-black font-bold">{{ item.cantidad || 1 }}</td>
                 <td class="py-2 uppercase leading-tight text-black pr-2">
-                  {{ item.nombre_pieza || item.nombre || 'PIEZA' }}
+                  {{ item.nombre || 'PIEZA GENÉRICA' }}
                 </td>
                 <td class="py-2 text-right font-bold align-top text-black">
-                  ${{ ((item.cantidad || 1) * (item.precio_unitario || item.precio || 0)).toFixed(2) }}
+                  ${{ (Number(item.subtotal || (item.cantidad * item.precio_unitario))).toFixed(2) }}
                 </td>
               </tr>
               <tr v-if="!order?.productos_vendidos?.length">
@@ -42,9 +42,17 @@
           </table>
         </div>
 
-        <div class="border-t-2 border-dashed border-black pt-4 text-black">
-          <div class="flex justify-between items-center text-sm sm:text-base font-black italic uppercase text-black">
-            <span>Total a Pagar</span>
+        <div class="border-t-2 border-dashed border-black pt-4 text-black space-y-1">
+          <div class="flex justify-between text-[10px] font-bold">
+            <span>SUBTOTAL:</span>
+            <span>${{ (Number(order?.total_venta || 0) / 1.16).toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between text-[10px] font-bold">
+            <span>IVA (16%):</span>
+            <span>${{ (Number(order?.total_venta || 0) - (Number(order?.total_venta || 0) / 1.16)).toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm sm:text-base font-black italic uppercase text-black pt-2 border-t border-black/10">
+            <span>Total Neto</span>
             <span class="text-xl sm:text-2xl">${{ Number(order?.total_venta || order?.total || 0).toFixed(2) }}</span>
           </div>
           <div class="mt-8 text-center">
@@ -53,24 +61,24 @@
         </div>
       </div>
 
-      <div class="p-6 sm:p-8 flex-1 bg-[#05080a] md:bg-[#05080a]/50 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#ffffff]/10 flex-shrink-0 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] md:shadow-none">
-        
+      <div class="p-6 sm:p-8 flex-1 bg-[#05080a] md:bg-[#05080a]/50 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#ffffff]/10 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.5)] md:shadow-none">
         <div class="mb-6 md:mb-10 text-center md:text-left hidden sm:block">
           <div class="flex items-center gap-2 mb-3 md:mb-4 justify-center md:justify-start">
             <span class="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse"></span>
-            <h4 class="text-[#00ff88] font-black uppercase text-[10px] sm:text-xs tracking-widest">Módulo de Salida</h4>
+            <h4 class="text-[#00ff88] font-black uppercase text-[10px] sm:text-xs tracking-widest">Ticketera Activa</h4>
           </div>
           <p class="text-[9px] sm:text-[10px] text-[#819da7] leading-relaxed">
-            Formato optimizado para ticketera térmica de 80mm. 
+            Formato optimizado para impresión térmica 80mm. 
           </p>
         </div>
 
         <div class="space-y-3 sm:space-y-4 mt-auto">
           <button @click="imprimirTicket" class="w-full bg-[#00ff88] text-black py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest shadow-neon hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
-            <span class="text-base">🖨️</span> Ejecutar Impresión
+            🖨️ <span class="hidden sm:inline">IMPRIMIR TICKET</span>
+            <span class="sm:hidden">IMPRIMIR</span>
           </button>
           <button @click="$emit('close')" class="w-full bg-transparent border border-[#ffffff]/10 text-[#819da7] py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest hover:bg-[#ffffff]/5 hover:text-white transition-all">
-            Volver
+            Cerrar
           </button>
         </div>
       </div>
@@ -91,10 +99,7 @@ const formatearFechaCompleta = (f) => {
 };
 
 const imprimirTicket = () => {
-  // 1. Capturamos el HTML de tu ticket
   const ticketHTML = document.getElementById('print-area').innerHTML;
-
-  // 2. Creamos un Iframe "Fantasma" fuera de la vista de la pantalla
   const iframe = document.createElement('iframe');
   iframe.style.position = 'absolute';
   iframe.style.top = '-10000px'; 
@@ -102,18 +107,16 @@ const imprimirTicket = () => {
 
   const doc = iframe.contentWindow.document;
 
-  // 3. Recolectamos todos tus estilos de Tailwind para que no pierda el formato
   let stylesHtml = '';
   document.querySelectorAll('style, link[rel="stylesheet"]').forEach(s => {
     stylesHtml += s.outerHTML;
   });
 
-  // 4. Inyectamos el ticket en el Iframe con los márgenes de 80mm forzados
   doc.open();
   doc.write(`
     <html>
       <head>
-        <title>Ticket de Compra</title>
+        <title>Ticket Refaccionaria</title>
         ${stylesHtml}
         <style>
           @page { size: 80mm auto; margin: 0; }
@@ -122,22 +125,24 @@ const imprimirTicket = () => {
             margin: 0;
             padding: 5mm;
             background-color: white !important;
+            font-family: monospace;
           }
           * { color: black !important; }
+          table { width: 100%; border-collapse: collapse; }
+          .text-right { text-align: right; }
+          .border-b { border-bottom: 1px solid #ccc; }
         </style>
       </head>
-      <body class="font-mono">
+      <body>
         ${ticketHTML}
       </body>
     </html>
   `);
   doc.close();
 
-  // 5. Le damos medio segundo para que renderice los estilos y ¡Boom!, a imprimir.
   setTimeout(() => {
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-    // Destruimos el iframe después de imprimir para no dejar basura en la memoria
     setTimeout(() => {
       document.body.removeChild(iframe);
     }, 1000);
@@ -151,24 +156,14 @@ const imprimirTicket = () => {
 .shadow-neon { box-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
 
 .ticket-print-visual {
-  min-height: 300px; /* Reducido un poco para celular */
   box-shadow: inset 0 0 50px rgba(0,0,0,0.05);
   background-color: white !important;
 }
 
-@media (min-width: 768px) {
-  .ticket-print-visual {
-    min-height: 500px;
-  }
-}
-
-/* Custom Scrollbar suave para el ticket en PC */
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.3); }
 
-/* Deslizamiento suave en iOS/Android */
 .table-wrap, .custom-scrollbar {
   -webkit-overflow-scrolling: touch;
 }

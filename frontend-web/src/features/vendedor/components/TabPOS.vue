@@ -19,12 +19,12 @@
         <div class="flex gap-2 sm:gap-3 overflow-x-auto pb-2 scrollbar-hide">
           <button 
             v-for="cat in categorias" 
-            :key="cat"
-            @click="categoriaActiva = cat"
+            :key="cat.id"
+            @click="categoriaActiva = cat.id"
             :class="['px-4 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all border', 
-                     categoriaActiva === cat ? 'bg-[#00ff88] text-[#05080a] border-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.4)]' : 'bg-[#05080a] text-[#819da7] border-[#ffffff]/5 hover:border-[#00ff88]/50 hover:text-[#00ff88]']"
+                     categoriaActiva === cat.id ? 'bg-[#00ff88] text-[#05080a] border-[#00ff88] shadow-[0_0_15px_rgba(0,255,136,0.4)]' : 'bg-[#05080a] text-[#819da7] border-[#ffffff]/5 hover:border-[#00ff88]/50 hover:text-[#00ff88]']"
           >
-            {{ cat }}
+            {{ cat.nombre }}
           </button>
         </div>
       </div>
@@ -56,12 +56,8 @@
             <button 
               @click="addToCart(p)" 
               :disabled="(p.stock ?? p.cantidad ?? 0) <= 0"
-              :class="[
-                'flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all w-24 sm:w-auto',
-                (p.stock ?? p.cantidad ?? 0) <= 0 
-                  ? 'bg-red-500/10 text-red-500 border border-red-500/20 cursor-not-allowed opacity-50' 
-                  : 'bg-transparent border border-[#00ff88]/30 hover:bg-[#00ff88]/10 text-[#00ff88]'
-              ]"
+              class="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all w-24 sm:w-auto"
+              :class="(p.stock ?? p.cantidad ?? 0) <= 0 ? 'bg-red-500/10 text-red-500 border border-red-500/20 cursor-not-allowed opacity-50' : 'bg-transparent border border-[#00ff88]/30 hover:bg-[#00ff88]/10 text-[#00ff88]'"
             >
               🛒 <span class="hidden sm:inline">{{ (p.stock ?? p.cantidad ?? 0) <= 0 ? 'AGOTADO' : 'AÑADIR' }}</span>
               <span class="sm:hidden">{{ (p.stock ?? p.cantidad ?? 0) <= 0 ? '---' : 'AÑADIR' }}</span>
@@ -72,71 +68,52 @@
         <div v-if="productosFiltrados.length === 0" class="col-span-full text-center py-10 opacity-50">
           <span class="text-4xl mb-4 block drop-shadow-[0_0_10px_rgba(0,255,136,0.5)]">👻</span>
           <p class="text-lg sm:text-xl font-bold text-[#819da7]">Datos no encontrados</p>
-          <p class="text-[10px] sm:text-sm text-[#819da7]/70 font-mono mt-2">Intenta ajustar los parámetros de búsqueda</p>
         </div>
 
       </div>
     </div>
 
     <aside class="w-full xl:w-[450px] bg-[#0c1215] rounded-[2rem] sm:rounded-[3rem] border border-[#00ff88]/10 p-5 sm:p-10 flex flex-col shadow-[0_10px_40px_rgba(0,0,0,0.8)] relative overflow-hidden flex-shrink-0 min-h-[400px]">
-      <div class="absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 bg-[#00ff88]/5 rounded-bl-full pointer-events-none"></div>
-      
       <h2 class="text-xs sm:text-sm font-black uppercase tracking-[0.3em] text-[#819da7] mb-6 sm:mb-8 border-b border-[#ffffff]/5 pb-4">Ticket de Operación</h2>
       
       <div class="flex-1 space-y-3 sm:space-y-4 overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
-        
-        <div v-for="item in cart" :key="item.id" class="flex flex-col gap-2 sm:gap-3 bg-[#05080a] p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-[#ffffff]/5 group hover:border-[#00ff88]/30 transition-colors">
-          
+        <div v-for="item in cart" :key="item.id" class="flex flex-col gap-2 bg-[#05080a] p-3 rounded-xl border border-[#ffffff]/5 group hover:border-[#00ff88]/30 transition-colors">
           <div class="flex justify-between items-start gap-2">
-            <p class="text-xs sm:text-sm font-bold text-white group-hover:text-[#00ff88] transition-colors leading-tight line-clamp-2" :title="item.nombre">{{ item.nombre }}</p>
-            <button 
-              @click="removeFromCart(item.id)" 
-              class="text-[#ef4444]/50 hover:text-[#ef4444] transition-colors font-black text-[10px] sm:text-xs px-2 py-1 rounded-md hover:bg-red-500/10 flex-shrink-0"
-            >
-              ✕
-            </button>           
+            <p class="text-xs font-bold text-white group-hover:text-[#00ff88] line-clamp-2">{{ item.nombre }}</p>
+            <button @click="removeFromCart(item.id)" class="text-[#ef4444]/50 hover:text-[#ef4444] text-xs">✕</button>
           </div>
-
           <div class="flex justify-between items-end mt-1">
-            <div class="flex items-center gap-2 sm:gap-4 bg-[#0c1215] rounded-lg sm:rounded-xl border border-[#ffffff]/10 px-2 sm:px-3 py-1 sm:py-1.5 shadow-inner">
-              <button @click="decrementarCantidad(item.id)" class="text-[#819da7] hover:text-white font-black text-sm sm:text-lg transition-transform hover:scale-110 px-1">-</button>
-              <span class="text-[#00ff88] font-mono text-xs sm:text-sm font-black w-4 text-center">{{ item.cantidad }}</span>
-              <button @click="incrementarCantidad(item)" class="text-[#819da7] hover:text-white font-black text-sm sm:text-lg transition-transform hover:scale-110 px-1">+</button>
+            <div class="flex items-center gap-3 bg-[#0c1215] rounded-lg border border-[#ffffff]/10 px-2 py-1">
+              <button @click="decrementarCantidad(item.id)" class="text-[#819da7] hover:text-white">-</button>
+              <span class="text-[#00ff88] font-mono text-xs">{{ item.cantidad }}</span>
+              <button @click="incrementarCantidad(item)" class="text-[#819da7] hover:text-white">+</button>
             </div>
-
             <div class="text-right">
-              <p class="text-[9px] sm:text-[10px] text-[#819da7] font-mono mb-0.5">${{ item.precio }} c/u</p>
-              <p class="font-bold font-mono text-[#00ff88] text-base sm:text-lg leading-none">${{ (item.cantidad * item.precio).toFixed(2) }}</p>
+              <p class="font-bold font-mono text-[#00ff88] text-base">${{ (item.cantidad * item.precio).toFixed(2) }}</p>
             </div>
           </div>
         </div>
-        
-        <div v-if="cart.length === 0" class="text-center py-10 sm:py-20 opacity-30">
-          <span class="text-5xl sm:text-6xl mb-4 block">🧾</span>
-          <p class="italic text-[10px] sm:text-xs text-[#819da7] mt-2 font-mono">Esperando datos de entrada...</p>
-        </div>
+        <div v-if="cart.length === 0" class="text-center py-20 opacity-30">🧾 <p class="italic text-xs text-[#819da7] mt-2">Esperando datos...</p></div>
       </div>
 
-      <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-[#ffffff]/10">
+      <div class="mt-4 pt-6 border-t border-[#ffffff]/10">
         <div class="space-y-2 mb-6 bg-[#05080a] p-4 rounded-2xl border border-[#ffffff]/5">
           <div class="flex justify-between text-[10px] font-black text-[#819da7] uppercase tracking-widest">
-            <span>Subtotal</span>
-            <span>${{ cartSubtotal.toFixed(2) }}</span>
+            <span>Subtotal</span><span>${{ cartSubtotal.toFixed(2) }}</span>
           </div>
           <div class="flex justify-between text-[10px] font-black text-[#819da7] uppercase tracking-widest">
-            <span>IVA (16%)</span>
-            <span>${{ cartTax.toFixed(2) }}</span>
+            <span>IVA (16%)</span><span>${{ cartTax.toFixed(2) }}</span>
           </div>
           <div class="flex justify-between items-end pt-2 border-t border-[#ffffff]/10">
-            <span class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-[#00ff88]">Total Neto</span>
-            <span class="text-2xl sm:text-4xl font-mono font-black text-[#00ff88] drop-shadow-[0_0_10px_rgba(0,255,136,0.3)]">${{ cartTotal.toFixed(2) }}</span>
+            <span class="text-[10px] font-black uppercase text-[#00ff88]">Total Neto</span>
+            <span class="text-3xl font-mono font-black text-[#00ff88]">${{ cartTotal.toFixed(2) }}</span>
           </div>
         </div>
         
         <button 
           @click="finalizarVenta" 
           :disabled="cart.length === 0" 
-          class="w-full bg-transparent border-2 border-[#00ff88] text-[#00ff88] hover:bg-[#00ff88] hover:text-[#05080a] py-3 sm:py-5 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] transition-all shadow-[0_0_10px_rgba(0,255,136,0.2)] hover:shadow-[0_0_30px_rgba(0,255,136,0.6)] disabled:opacity-20 disabled:cursor-not-allowed text-xs sm:text-sm"
+          class="w-full border-2 border-[#00ff88] text-[#00ff88] hover:bg-[#00ff88] hover:text-[#05080a] py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(0,255,136,0.2)] disabled:opacity-20"
         >
           CERRAR VENTA 🏁
         </button>
@@ -157,25 +134,29 @@ const searchQuery = ref('');
 const cart = ref([]);
 const searchResults = ref([]); 
 
-const categorias = ['Todos', 'Motor', 'Frenos', 'Suspensión', 'Eléctrico', 'Filtros', 'Accesorios'];
+// Mapeo de Categorías por ID de MySQL
+const categorias = [
+  { id: 'Todos', nombre: 'Todos' },
+  { id: 1, nombre: 'Motor' },
+  { id: 2, nombre: 'Frenos' },
+  { id: 3, nombre: 'Suspensión' },
+  { id: 4, nombre: 'Eléctrico' },
+  { id: 5, nombre: 'Filtros' },
+  { id: 6, nombre: 'Accesorios' }
+];
 const categoriaActiva = ref('Todos');
 
-// 1. Carga inicial desde MySQL
 const cargarInventarioInicial = async () => {
   try {
     const res = await axios.get(`${API_SQL}/productos`);
     searchResults.value = res.data.data ? res.data.data : res.data;
   } catch(e) {
-    console.error("Error cargando inventario inicial:", e);
-    searchResults.value = [];
+    console.error("Error:", e);
   }
 };
 
-onMounted(() => {
-  cargarInventarioInicial();
-});
+onMounted(cargarInventarioInicial);
 
-// 2. Filtro de búsqueda frontend
 const productosFiltrados = computed(() => {
   return searchResults.value.filter(p => {
     const term = searchQuery.value.toLowerCase().trim();
@@ -185,100 +166,60 @@ const productosFiltrados = computed(() => {
 
     let cumpleCategoria = true;
     if (categoriaActiva.value !== 'Todos') {
-       const nombreCat = (typeof p.categoria === 'object' ? p.categoria?.nombre : p.categoria) || '';
-       const catNormalizada = nombreCat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-       const buscadaNormalizada = categoriaActiva.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-       cumpleCategoria = catNormalizada === buscadaNormalizada;
+       // Comparamos el ID numérico de la base de datos contra el ID del botón
+       cumpleCategoria = Number(p.id_categoria) === Number(categoriaActiva.value);
     }
-
     return cumpleBusqueda && cumpleCategoria;
   });
 });
 
-// 3. Gestión de Carrito
 const addToCart = (p) => {
-  const stockDisponible = p.stock ?? p.cantidad ?? 0;
-  if (stockDisponible <= 0) return;
-
+  const stock = p.stock ?? p.cantidad ?? 0;
+  if (stock <= 0) return;
   const item = cart.value.find(i => i.id === p.id);
   if (item) {
-    if (item.cantidad < stockDisponible) {
-      item.cantidad++;
-    } else {
-      alert("⚠️ Has alcanzado el límite de stock en bodega.");
-    }
+    if (item.cantidad < stock) item.cantidad++;
+    else alert("Sin stock suficiente.");
   } else {
-    cart.value.push({ 
-      ...p, 
-      cantidad: 1, 
-      stock_maximo: stockDisponible, 
-      nombre: p.nombre || p.nombre_producto,
-      precio: p.precio_venta || p.precio || 0
-    });
+    cart.value.push({ ...p, cantidad: 1, stock_maximo: stock, nombre: p.nombre || p.nombre_producto, precio: p.precio_venta || p.precio || 0 });
   }
 };
 
-const incrementarCantidad = (item) => {
-  if (item.cantidad < item.stock_maximo) item.cantidad++;
-  else alert("⚠️ Sin stock suficiente.");
-};
-
+const incrementarCantidad = (item) => item.cantidad < item.stock_maximo ? item.cantidad++ : alert("Límite alcanzado.");
 const decrementarCantidad = (id) => {
-  const item = cart.value.find(i => id === i.id);
+  const item = cart.value.find(i => i.id === id);
   if (item) item.cantidad > 1 ? item.cantidad-- : removeFromCart(id);
 };
+const removeFromCart = (id) => cart.value = cart.value.filter(i => i.id !== id);
 
-const removeFromCart = (id) => {
-  cart.value = cart.value.filter(i => i.id !== id);
-};
-
-// Lógica de cálculos (IVA Incluido)
+// Cálculos de IVA
 const cartSubtotal = computed(() => cart.value.reduce((acc, i) => acc + (i.precio * i.cantidad), 0));
 const cartTax = computed(() => cartSubtotal.value * 0.16);
 const cartTotal = computed(() => cartSubtotal.value + cartTax.value);
 
-// 4. EL PUENTE (Finalizar Venta)
 const finalizarVenta = async () => {
   if (!cart.value.length) return;
-  
   try {
-    const payloadVenta = {
+    const payload = {
       id_vendedor: props.userId, 
-      productos_vendidos: cart.value.map(item => ({
-        id_producto: String(item.id),
-        cantidad: item.cantidad,
-        precio_unitario: item.precio,
-        subtotal: item.cantidad * item.precio
-      })),
-      total_venta: cartTotal.value, // Envía el total ya con IVA
+      productos_vendidos: cart.value.map(item => ({ id_producto: String(item.id), cantidad: item.cantidad, precio_unitario: item.precio, subtotal: item.cantidad * item.precio })),
+      total_venta: cartTotal.value,
       estatus: 'Completada',
       fecha_hora: new Date()
     };
     
-    // 1. Guardar en NoSQL (MongoDB)
-    await axios.post(`${API_NOSQL}/ventas`, payloadVenta);
+    await axios.post(`${API_NOSQL}/ventas`, payload);
     
-    // 2. Descontar en SQL (TiDB) - Una petición por producto para evitar errores de validación
     const promesasDescuento = cart.value.map(item => {
-      return axios.post(`${API_SQL}/productos/descontar-stock`, {
-        id: Number(item.id),
-        cantidad: item.cantidad
-      });
+      return axios.post(`${API_SQL}/productos/descontar-stock`, { id: Number(item.id), cantidad: item.cantidad });
     });
 
     await Promise.all(promesasDescuento);
-
-    alert("✅ Venta finalizada con éxito (IVA incluido).");
-    
-    // Limpiar interfaz
-    cart.value = []; 
-    searchQuery.value = '';
-    categoriaActiva.value = 'Todos'; 
+    alert("✅ Venta registrada e inventario actualizado.");
+    cart.value = [];
     cargarInventarioInicial(); 
-    
   } catch (e) {
-    const errorReal = e.response?.data?.error || e.response?.data?.message || e.message;
-    alert("❌ Error en la operación: " + errorReal);
+    alert("❌ Error: " + (e.response?.data?.message || e.message));
   }
 };
 </script>
@@ -286,16 +227,6 @@ const finalizarVenta = async () => {
 <style scoped>
 .animate-fade-in { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #05080a; border-radius: 10px; }
-::-webkit-scrollbar-thumb { background: #0c1215; border: 1px solid rgba(0, 255, 136, 0.2); border-radius: 10px; }
-
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #0c1215 #05080a;
-}
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #00ff8822; border-radius: 10px; }
 </style>

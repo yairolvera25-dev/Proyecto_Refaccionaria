@@ -69,8 +69,8 @@ const menuMovilAbierto = ref(false); // Estado para controlar el menú en móvil
               <div class="badge-card">
                 <span class="badge-icon">🏢</span>
                 <div class="badge-info">
-                  <span class="badge-label">SUCURSAL</span>
-                  <span class="badge-value">Matriz</span>
+                  <span class="badge-label">SUCURSALES</span>
+                  <span class="badge-value">LOS AMIGOS</span>
                 </div>
               </div>
 

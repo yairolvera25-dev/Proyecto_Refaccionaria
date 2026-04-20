@@ -41,7 +41,7 @@
         <div class="bg-[#0c1215] rounded-[1.5rem] sm:rounded-[2rem] border border-[#ffffff]/5 overflow-hidden shadow-2xl w-full">
           <div class="p-5 sm:p-8 border-b border-[#ffffff]/5 bg-[#05080a]/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
             <h2 class="text-xs sm:text-sm font-black uppercase tracking-[0.3em] text-[#819da7]">Registro de Operaciones Recientes</h2>
-            <span class="text-[9px] sm:text-[10px] font-mono text-[#00ff88]/50">CLICK_ROW_FOR_DETAILS</span>
+            <span class="text-[9px] sm:text-[10px] font-mono text-[#00ff88]/50">DETAILS</span>
           </div>
 
           <div class="overflow-x-auto overflow-y-hidden w-full table-wrap">
