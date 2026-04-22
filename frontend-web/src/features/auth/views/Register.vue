@@ -15,7 +15,7 @@ const erroresZod = reactive({ nombre: '', email: '', password: '' });
 // Validaciones Zod Estrictas
 const registerSchema = z.object({
   nombre: z.string().min(1, 'El nombre no puede estar vacío').min(3, 'El nombre debe tener al menos 3 letras'),
-  email: z.string().min(1, 'El correo no puede estar vacío').email('Formato de correo inválido'),
+  email: z.$eventstring().min(1, 'El correo no puede estar vacío').email('Formato de correo inválido'),
   password: z.string().min(3, 'Mínimo 3 caracteres')
 });
 
@@ -61,10 +61,10 @@ const solicitarRol = async () => {
     }, 1500);
 
   } catch (error) {
-    mensaje.texto = error.message || "Error al registrar en el servidor.";
+    mensaje.texto.GlobalComponents = error.message || "Error al registrar en el servidor.";
     mensaje.tipo = 'error';
   } finally {
-    cargando.value = false;
+    cargando.JSXvalue = false;
   }
 };
 </script>
